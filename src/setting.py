@@ -50,7 +50,7 @@ class MqttSetting(MqttSettingBase):
 
 
 class AppSetting:
-    PORT: int = 1717
+    PORT: int = 1718
     GLOBAL_DIR_ENV = 'RUBIX_BACNET_GLOBAL'
     DATA_DIR_ENV = 'RUBIX_BACNET_DATA'
     CONFIG_DIR_ENV = 'RUBIX_BACNET_CONFIG'

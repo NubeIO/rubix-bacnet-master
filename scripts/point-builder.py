@@ -2,7 +2,7 @@ import json
 import requests
 
 ip = "0.0.0.0"
-port = 1717
+port = 1718
 
 url = f'http://{ip}:{port}/api'
 points_url = f'{url}/bacnet/points'

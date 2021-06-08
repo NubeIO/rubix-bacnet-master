@@ -37,7 +37,7 @@ The output image is: `rubix-bacnet:dev`
 
 ```bash
 docker volume create rubix-bacnet-data
-docker run --rm -it -p 1991:1991 -v rubix-bacnet-data:/data --name rubix-bacnet rubix-bacnet:dev
+docker run --rm -it -p 1718:1718 -v rubix-bacnet-data:/data --name rubix-bacnet rubix-bacnet:dev
 ```
 
 ## Deploy on Production
@@ -50,7 +50,7 @@ $ rubix-bacnet -h
 Usage: rubix-bacnet [OPTIONS]
 
 Options:
-  -p, --port INTEGER              Port  [default: 1717]
+  -p, --port INTEGER              Port  [default: 1718]
   -g, --global-dir PATH           Global dir
   -d, --data-dir PATH             Application data dir
   -c, --conf-dir PATH             Application config dir
@@ -90,31 +90,31 @@ Example debug topic
 Get flask server details
 
 ```bash
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://0.0.0.0:1717/api/system/ping
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://0.0.0.0:1718/api/system/ping
 ```
 
 Get bacnet server details
 
 ```bash
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://0.0.0.0:1717/api/bacnet/server
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://0.0.0.0:1718/api/bacnet/server
 ```
 
 Get bacnet server points
 
 ```bash
-curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://0.0.0.0:1717/api/bacnet/points
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://0.0.0.0:1718/api/bacnet/points
 ```
 
 HTTP PATCH new bacnet server `device_id`
 
 ```bash
-curl --data '{"device_id": "1233"}' -i -H "Accept: application/json" -H "Content-Type: application/json" -X PATCH http://0.0.0.0:1717/api/bacnet/server
+curl --data '{"device_id": "1233"}' -i -H "Accept: application/json" -H "Content-Type: application/json" -X PATCH http://0.0.0.0:1718/api/bacnet/server
 ```
 
 HTTP PATCH new bacnet server `ip`
 
 ```bash
-curl --data '{"ip": "192.168.0.123"}' -i -H "Accept: application/json" -H "Content-Type: application/json" -X PATCH http://0.0.0.0:1717/api/bacnet/server
+curl --data '{"ip": "192.168.0.123"}' -i -H "Accept: application/json" -H "Content-Type: application/json" -X PATCH http://0.0.0.0:1718/api/bacnet/server
 ```
 
 ## Get details

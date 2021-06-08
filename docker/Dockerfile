@@ -40,6 +40,6 @@ USER rubix:nubeio
 
 VOLUME $RUBIX_BACNET_DATA
 
-EXPOSE 1717
+EXPOSE 1718
 
 ENTRYPOINT [ "./rubix-bacnet" ]

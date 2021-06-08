@@ -1,6 +1,7 @@
 from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.interfaces.object_property import ObjProperty
-from src.bacnet_server.utils.functions import to_bool
+
+from src.bacnet_master.utils.functions import to_bool
 
 
 class BACnetCommon:
