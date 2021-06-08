@@ -2,10 +2,8 @@ import time
 from datetime import datetime
 
 from flask import current_app
-from mrb.brige import MqttRestBridge
 from rubix_http.resource import RubixResource
 
-# from src.bacnet_server import BACServer
 from src.mqtt import MqttClient
 from src.utils.project import get_version
 
@@ -45,10 +43,6 @@ class Ping(RubixResource):
             'mqtt': {
                 'enabled': setting.mqtt.enabled,
                 'status': MqttClient().status()
-            },
-            'mqtt_rest_bridge_listener': {
-                'enabled': setting.mqtt_rest_bridge_setting.enabled,
-                'status': MqttRestBridge.status()
             }
         }
 

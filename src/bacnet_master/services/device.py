@@ -5,7 +5,6 @@ from src.bacnet_master.interfaces.object_property import ObjProperty
 from src.bacnet_master.models.device import BacnetDeviceModel
 from src.bacnet_master.models.network import BacnetNetworkModel
 from src.bacnet_master.services.network import Network
-# from src.bacnet_server.utils.functions import to_bool
 
 logger = logging.getLogger(__name__)
 

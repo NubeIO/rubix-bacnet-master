@@ -1,7 +1,6 @@
 import BAC0
 
 from src.bacnet_master.interfaces.object_property import ObjProperty
-from src.bacnet_server.helpers.helper_point_array import serialize_priority_array
 
 bacnet = BAC0.lite(ip="192.168.15.102", mask=24, port=47808, ping=False)
 h = 1

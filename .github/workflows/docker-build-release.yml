@@ -14,8 +14,8 @@ on:
       - 'v*'
 
 env:
-  APP_NAME: rubix-bacnet
-  GHCR_IMAGE: ghcr.io/nubeio/rubix-bacnet
+  APP_NAME: rubix-bacnet-master
+  GHCR_IMAGE: ghcr.io/nubeio/rubix-bacnet-master
   PLATFORMS: linux/amd64,linux/arm/v7
 
 jobs:
