@@ -30,10 +30,7 @@ def number_of_workers():
 @click.option('-l', '--logging-conf', help='Rubix BACnet: logging config file')
 @click.option('--workers', type=int, help='Gunicorn: The number of worker processes for handling requests.')
 @click.option('--gunicorn-config', help='Gunicorn: config file(gunicorn.conf.py)')
-@click.option('--log-level', type=click.Choice(['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG'], case_sensitive=False),
-              show_default=True, help='Logging level')
-def cli(port, global_dir, data_dir, config_dir, identifier, prod, workers, setting_file, logging_conf, gunicorn_config,
-        log_level):
+def cli(port, global_dir, data_dir, config_dir, identifier, prod, workers, setting_file, logging_conf, gunicorn_config):
     setting = AppSetting(port=port, global_dir=global_dir, data_dir=data_dir, config_dir=config_dir,
                          identifier=identifier, prod=prod).reload(setting_file)
     options = {

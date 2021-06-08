@@ -3,7 +3,6 @@ import os
 from abc import ABC
 
 from flask import Flask
-from mrb.setting import MqttSetting as MqttRestBridgeSetting
 from rubix_mqtt.setting import MqttSettingBase
 
 
@@ -42,11 +41,11 @@ class MqttSetting(MqttSettingBase):
 
     def __init__(self):
         super().__init__()
-        self.name = 'bacnet-server-mqtt'
+        self.name = 'bacnet-master-mqtt'
         self.publish_value = True
-        self.topic = 'rubix/bacnet_server/points'
+        self.topic = 'rubix/bacnet_master/points'
         self.publish_debug = True
-        self.debug_topic = 'rubix/bacnet_server/debug'
+        self.debug_topic = 'rubix/bacnet_master/debug'
 
 
 class AppSetting:
@@ -75,7 +74,6 @@ class AppSetting:
         self.__prod = kwargs.get('prod') or False
         self.__mqtt_setting = MqttSetting()
         self.__bacnet_setting = BACnetSetting()
-        self.__mqtt_rest_bridge_setting = MqttRestBridgeSetting()
 
     @property
     def port(self):
@@ -109,10 +107,6 @@ class AppSetting:
     def bacnet(self) -> BACnetSetting:
         return self.__bacnet_setting
 
-    @property
-    def mqtt_rest_bridge_setting(self) -> MqttRestBridgeSetting:
-        return self.__mqtt_rest_bridge_setting
-
     def serialize(self, pretty=True) -> str:
         m = {BACnetSetting.KEY: self.bacnet, MqttSetting.KEY: self.mqtt, 'prod': self.prod,
              'global_dir': self.global_dir, 'data_dir': self.data_dir, 'config_dir': self.config_dir}
@@ -123,8 +117,6 @@ class AppSetting:
         data = self.__read_file(setting_file, self.__config_dir, is_json_str)
         self.__mqtt_setting = self.__mqtt_setting.reload(data.get(MqttSetting.KEY))
         self.__bacnet_setting = self.__bacnet_setting.reload(data.get(BACnetSetting.KEY))
-        self.__mqtt_rest_bridge_setting = self.__mqtt_rest_bridge_setting.reload(data.get('mqtt_rest_bridge_listener'))
-        self.__mqtt_rest_bridge_setting.name = 'bacnet_mqtt_rest_bridge_listener'
         return self
 
     def init_app(self, app: Flask):

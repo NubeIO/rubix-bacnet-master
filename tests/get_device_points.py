@@ -2,7 +2,6 @@ import time
 
 import BAC0
 
-from src.bacnet_server.helpers.helper_point_array import serialize_priority_array
 
 bacnet = BAC0.lite('192.168.15.102/24:47808')
 # device = BAC0.device('192.168.15.202', 202, bacnet, segmentation_supported=True)
