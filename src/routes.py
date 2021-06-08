@@ -4,16 +4,10 @@ from flask_restful import Api
 from src.bacnet_master.resources.device import Device, DeviceList, PointWritePresentValue, \
     DeviceObjectList, BuildPointsList
 from src.bacnet_master.resources.network import Network, NetworkList, NetworksIds
-from src.bacnet_master.resources.network_whois import Whois, UnknownDeviceObjects
+from src.bacnet_master.resources.network_whois import Whois, UnknownDeviceObjects, \
+    UnknownReadPointPv
 from src.bacnet_master.resources.point import Point, PointList, PointBACnetRead, PointBACnetWrite
 
-# from src.bacnet_server.resources.mapping.mapping import BPGPMappingResourceList, GBPMappingResourceByGenericPointUUID, \
-#     GBPMappingResourceByBACnetPointUUID, BPGPMappingResourceByUUID
-# from src.bacnet_server.resources.point.point_plural import BACnetPointPlural
-# from src.bacnet_server.resources.point.point_singular import BACnetPointSingularByUUID, \
-#     BACnetPointSingularByName, BACnetPointSingularByObject
-# from src.bacnet_server.resources.point.point_sync import BPToGPSync
-# from src.bacnet_server.resources.server.server import BACnetServer
 from src.system.resources.ping import Ping
 
 bp_bacnet_server = Blueprint('bacnet_server', __name__, url_prefix='/api/bacnet')
@@ -34,12 +28,11 @@ api_bacnet_server.add_resource(PointBACnetRead, '/master/b/points/read/pv/<strin
 api_bacnet_server.add_resource(PointBACnetWrite, '/master/b/points/write/pv/<string:pnt_uuid>/<string:value>/<string:priority>')  # write point pv
 api_bacnet_server.add_resource(BuildPointsList, '/master/b/points/point_list/<string:dev_uuid>')  # build points list
 api_bacnet_server.add_resource(DeviceObjectList, '/master/b/device/objects/<string:dev_uuid>')
+
+
+api_bacnet_server.add_resource(UnknownReadPointPv, '/master/b/point/unknown/point_pv/<string:net_uuid>')
 api_bacnet_server.add_resource(UnknownDeviceObjects, '/master/b/device/unknown/objects/<string:net_uuid>')
 
-
-# get a point /dev_uuid/analogInput/1/85
-# api_bacnet_server.add_resource(DevicePoint,
-#                                '/master/b/point/read/<string:dev_uuid>/<string:obj>/<string:obj_instance>/<string:prop>')
 
 api_bacnet_server.add_resource(PointWritePresentValue,
                                '/master/point/write/<string:dev_uuid>/<string:obj>/<string:obj_instance>/<string'
