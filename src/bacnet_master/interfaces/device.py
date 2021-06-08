@@ -73,3 +73,8 @@ class ObjType(Enum):
             d[i.value[2]] = False
         return d
 
+
+a = ObjType.ACCESS_POINT
+print(a)
+if a == ObjType.ANALOG_VALUE:
+    print(22222)

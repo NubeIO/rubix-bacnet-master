@@ -34,7 +34,5 @@ class Background:
         if setting.mqtt.enabled:
             FlaskThread(target=MqttClient().start, daemon=True, kwargs={'config': setting.mqtt}).start()
 
-
         if setting.bacnet.master_enabled:
             Network.get_instance().start()
-
