@@ -52,12 +52,7 @@ class Device:
         network_number = self._network_number(network_number)
         object_instance = kwargs.get('object_instance') or point.point_obj_id
         object_type = kwargs.get('object_type') or point.point_obj_type.name
-        print(111111)
         prop = kwargs.get('prop') or ObjProperty.presentValue.name
-        print(111111)
-        print(prop)
-        print(ObjProperty.presentValue.name)
-        print(111111)
         type_mstp = kwargs.get('type_mstp') or device.type_mstp
         device_mac = kwargs.get('device_mac') or device.device_mac
         if type_mstp:
@@ -84,20 +79,22 @@ class Device:
         else:
             return f'{dev_url} {object_type} {object_instance} {prop}'
 
-    def _get_objects_unknown(self, device):
+    def _get_objects_unknown(self, device, **kwargs):
         """192.168.15.202/24:47808 device 202 objectList"""
         dev_url = self.build_url(device)
         type_mstp = device.get("type_mstp", False)
         device_mac = device.get("device_mac", 0)
-        object_instance = device.get("device_id")
+        object_instance = kwargs.get('object_instance') or device.get("device_id")
         network_number = device.get("network_number")
         network_number = self._network_number(network_number)
-        object_type = ObjType.DEVICE.name
-        prop = ObjProperty.objectList.name
+        object_type = kwargs.get('object_type') or ObjType.DEVICE.name
+        prop = kwargs.get('prop') or ObjProperty.objectList.name
         logger.info(f"GET DEVICE OBJECT LIST  dev_url:{dev_url}, type_mstp:{type_mstp}, "
                     f"device_mac:{device_mac}, device_id:{object_instance}, "
                     f"network_number:{network_number}")
         if type_mstp:
+            # print(bacnet.read('192.168.15.202/24:47808 analogOutput 1 presentValue'))  # or 85
+            # print(bacnet.read('192.168.15.202/24:47808 object_type object_instance prop'))  # or 85
             logger.info(f"GET DEVICE OBJECT LIST - TYPE MSTP")
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
         if network_number != 0:
@@ -148,7 +145,11 @@ class Device:
 
     def get_point_pv(self, point):
         device = BacnetDeviceModel.find_by_device_uuid(point.device_uuid)
+        if not device:
+            return {"device": "device is none"}
         network_instance = self._get_network_from_device(device)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
         read = self._common_point(point, device)
         if network_instance:
             try:
@@ -161,15 +162,12 @@ class Device:
 
     def write_point_pv(self, point, value, priority):
         device = BacnetDeviceModel.find_by_device_uuid(point.device_uuid)
+        if not device:
+            return {"device": "device is none"}
         network_instance = self._get_network_from_device(device)
-        print(9999999)
-        print(device, network_instance)
-        print(9999999)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
         cmd = self._common_point(point, device)
-        print(cmd)
-        print(9999999)
-        # value = "active"
-        print(f"{cmd} {value} - 16")
         write = f"{cmd} {value} - {priority}"
         if network_instance:
             try:
@@ -182,6 +180,8 @@ class Device:
 
     def read_point_list(self, device):
         network_instance = self._get_network_from_device(device)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
         analog_inputs = []
         analog_outputs = []
         analog_values = []
@@ -250,6 +250,8 @@ class Device:
 
     def get_object_list(self, device):
         network_instance = self._get_network_from_device(device)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
         read = self._common_object(device)
         try:
             if network_instance:
@@ -305,11 +307,33 @@ class Device:
 
     def unknown_get_object_list(self, net_uuid, device):
         net = BacnetNetworkModel.find_by_network_uuid(net_uuid)
+        if not net:
+            return {"net": "net is none"}
         network_instance = self._get_network_from_network(net)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
         read = self._get_objects_unknown(device)
-        print(net, network_instance)
-        print(1111)
-        print(read)
+        try:
+            if network_instance:
+                return network_instance.read(read)
+        except:
+            return {}
+
+    def unknown_get_point_pv(self, net_uuid, device):
+        net = BacnetNetworkModel.find_by_network_uuid(net_uuid)
+        if not net:
+            return {"net": "net is none"}
+        network_instance = self._get_network_from_network(net)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
+        object_type = device.get("point_obj_type")  # analogOutput
+        object_type = ObjType.has_value_from_string(object_type)
+        if not object_type:
+            return {"object_type": "invalid object type"}
+        object_type = object_type.get("name")
+        object_instance = device.get("point_obj_id")  # 1
+        prop = ObjProperty.presentValue.name
+        read = self._get_objects_unknown(device, object_type=object_type, object_instance=object_instance, prop=prop)
         try:
             if network_instance:
                 return network_instance.read(read)
@@ -324,15 +348,3 @@ class Device:
             return network.write(write)
         raise Exception("Network not found")
 
-    # def whois(self, network_uuid, whois, network_number):
-    #     net = BacnetNetworkModel.find_by_network_uuid(network_uuid)
-    #     if net is None:
-    #         return {"error": "Network not found"}
-    #     network = Network.get_instance().get_network(net)
-    #     whois = to_bool(whois)
-    #     if whois:
-    #         network.whois()
-    #     else:
-    #         network.discover()
-    #     if network:
-    #         return network.devices

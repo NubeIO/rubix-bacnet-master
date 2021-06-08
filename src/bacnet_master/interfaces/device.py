@@ -29,6 +29,20 @@ class ObjType(Enum):
     PULSE_CONVERTER = "pulse-converter", 24, 'pulseConverter'
     ACCESS_POINT = "access-point", 33, 'accessPoint'
 
+    @classmethod
+    def has_value(cls, value):
+        if value in cls.__members__:
+            return value
+
+    @classmethod
+    def has_value_from_string(cls, value):
+        if value in cls.__members__:
+            return {
+                "value": ObjType[value],
+                "name": ObjType[value].name,
+                "id": ObjType[value].id
+            }
+
     @property
     def id(self):
         return self.value[1]

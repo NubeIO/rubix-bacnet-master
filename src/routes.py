@@ -4,7 +4,8 @@ from flask_restful import Api
 from src.bacnet_master.resources.device import Device, DeviceList, PointWritePresentValue, \
     DeviceObjectList, BuildPointsList
 from src.bacnet_master.resources.network import Network, NetworkList, NetworksIds
-from src.bacnet_master.resources.network_whois import Whois, UnknownDeviceObjects
+from src.bacnet_master.resources.network_whois import Whois, UnknownDeviceObjects, \
+    UnknownReadPointPv
 from src.bacnet_master.resources.point import Point, PointList, PointBACnetRead, PointBACnetWrite
 
 from src.system.resources.ping import Ping
@@ -21,7 +22,7 @@ api_bacnet_master.add_resource(NetworksIds, '/networks/ids')
 api_bacnet_master.add_resource(Point, '/point/<string:uuid>')
 api_bacnet_master.add_resource(PointList, '/points')
 
-# bacnet bac0 api calls
+# bacnet network calls
 api_bacnet_master.add_resource(Whois, '/b/network/whois/<string:net_uuid>')
 api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:pnt_uuid>')  # read point pv
 api_bacnet_master.add_resource(PointBACnetWrite,
@@ -29,14 +30,13 @@ api_bacnet_master.add_resource(PointBACnetWrite,
 api_bacnet_master.add_resource(BuildPointsList, '/b/points/point_list/<string:dev_uuid>')  # build points list
 api_bacnet_master.add_resource(DeviceObjectList, '/b/device/objects/<string:dev_uuid>')
 api_bacnet_master.add_resource(UnknownDeviceObjects, '/b/device/unknown/objects/<string:net_uuid>')
+api_bacnet_master.add_resource(UnknownReadPointPv, '/master/b/point/unknown/point_pv/<string:net_uuid>')
 
-# get a point /dev_uuid/analogInput/1/85
-# api_bacnet_master.add_resource(DevicePoint,
-#                                '/b/point/read/<string:dev_uuid>/<string:obj>/<string:obj_instance>/<string:prop>')
 
-api_bacnet_master \
-    .add_resource(PointWritePresentValue,
-                  '/point/write/<string:dev_uuid>/<string:obj>/<string:obj_instance>/<string:value>/<string:priority>')
+
+# api_bacnet_master \
+#     .add_resource(PointWritePresentValue,
+#                   '/point/write/<string:dev_uuid>/<string:obj>/<string:obj_instance>/<string:value>/<string:priority>')
 
 bp_system = Blueprint('system', __name__, url_prefix='/api/system')
 api_system = Api(bp_system)

@@ -1,5 +1,3 @@
-import json
-
 from flask_restful import Resource, reqparse, abort, marshal_with
 from src.bacnet_master.models.point import BacnetPointModel
 from src.bacnet_master.resources.fields import point_fields
@@ -86,7 +84,6 @@ class PointBACnetRead(Resource):
         if not point:
             abort(404, message='Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
-        # bacnet.write(f'{address} {object_type} {object_instance} presentValue {value} - 16')
         if not read:
             abort(404, message='Cant read point')
         return {
@@ -101,9 +98,6 @@ class PointBACnetWrite(Resource):
         if not point:
             abort(404, message='Points not found')
         read = DeviceService.get_instance().write_point_pv(point, value, priority)
-        print(1212)
-        print(read)
-        print(1212)
         if not read:
             abort(404, message='Cant read point')
         return {
