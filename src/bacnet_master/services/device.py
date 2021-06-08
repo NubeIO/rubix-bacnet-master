@@ -55,6 +55,10 @@ class Device:
         prop = kwargs.get('prop') or ObjProperty.presentValue.name
         type_mstp = kwargs.get('type_mstp') or device.type_mstp
         device_mac = kwargs.get('device_mac') or device.device_mac
+        logger.info(f"DO POINT READ dev_url:{dev_url}, type_mstp:{type_mstp}, "
+                    f"device_mac:{device_mac}, object_instance:{object_instance},  "
+                    f"object_type:{object_type},  prop:{prop}, "
+                    f"network_number:{network_number}")
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
         if network_number != 0:
@@ -154,7 +158,6 @@ class Device:
         if network_instance:
             try:
                 action = network_instance.read(read)
-                print(action)
                 return action
             except:
                 logger.info(f"DO POINT WRITE ERROR:")
@@ -167,16 +170,22 @@ class Device:
         network_instance = self._get_network_from_device(device)
         if not network_instance:
             return {"network_instance": "network instance is none"}
+        point_object = point.point_obj_type
+        value = float(value)
+        if point_object == ObjType.BINARY_OUTPUT or point_object == ObjType.BINARY_VALUE:
+            if value >= 1:
+                value = "active"
+            elif value < 1:
+                value = "inactive"
         cmd = self._common_point(point, device)
         write = f"{cmd} {value} - {priority}"
         if network_instance:
             try:
                 action = network_instance.write(write)
-                print(action)
                 return action
             except:
                 logger.info(f"DO POINT WRITE ERROR:")
-                return {"error": "on point write"}
+                return True
 
     def read_point_list(self, device):
         network_instance = self._get_network_from_device(device)
@@ -340,11 +349,4 @@ class Device:
         except:
             return {}
 
-    def write_point_present_value(self, device, obj, obj_instance, value, priority):
-        dev_url = self.get_dev_url(device)
-        network = self._get_network_from_device(device)
-        if network:
-            write = '%s %s %s presentValue %s - %s' % (dev_url, obj, obj_instance, value, priority)
-            return network.write(write)
-        raise Exception("Network not found")
 

@@ -84,8 +84,8 @@ class PointBACnetRead(Resource):
         if not point:
             abort(404, message='Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
-        if not read:
-            abort(404, message='Cant read point')
+        if not isinstance(read, (int, float)):
+            abort(404, message='Failed to read point value')
         return {
             "point_name": point.point_name,
             "point_value": read
@@ -98,42 +98,10 @@ class PointBACnetWrite(Resource):
         if not point:
             abort(404, message='Points not found')
         read = DeviceService.get_instance().write_point_pv(point, value, priority)
-        if not read:
-            abort(404, message='Cant read point')
+        if read:
+            abort(404, message={"error": "on point write"})
         return {
             "point_name": point.point_name,
-            "point_value": read
+            "point_value": value,
+            "priority": priority
         }
-
-
-# class ReadPointObject(Resource):
-#     def get(self, uuid):
-#         point = BacnetPointModel.find_by_uuid(uuid)
-#         if not point:
-#             abort(404, message='Points not found')
-#         read = DeviceService.get_instance().read_point_list(point)
-#         if not read:
-#             abort(404, message='Cant read point')
-#         return {
-#             "value": read
-#         }
-
-
-# class PointBACnetRead(Resource):
-#     # @marshal_with(point_fields)
-#     def get(self, uuid):
-#         point = BacnetPointModel.find_by_uuid(uuid)
-#         print(11111)
-#         print(point.point_obj_type)
-#         print(type(point.point_obj_type))
-#         print(point.point_obj_type.name)
-#         if not point:
-#             abort(404, message='Points not found.')
-#         device = BacnetDeviceModel.find_by_device_uuid(point.device_uuid)
-#         if not device:
-#             abort(404, message='Device Not found')
-#         # network = BacnetNetworkModel.find_by_network_uuid(device.network_uuid)
-#         # if not network:
-#         #     abort(404, message='Network Not found')
-#
-#         return DeviceService.get_instance().get_point2(point)
