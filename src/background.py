@@ -27,7 +27,7 @@ class FlaskThread(Thread):
 class Background:
     @staticmethod
     def run():
-        from src.bacnet_server import BACServer
+        # from src.bacnet_server import BACServer
         from src.bacnet_master.services.network import Network
         from src.mqtt import MqttClient
 
@@ -36,8 +36,8 @@ class Background:
         if setting.mqtt.enabled:
             FlaskThread(target=MqttClient().start, daemon=True, kwargs={'config': setting.mqtt}).start()
 
-        if setting.bacnet.enabled:
-            FlaskThread(target=BACServer().start_bac, daemon=True, kwargs={'config': setting.bacnet}).start()
+        # if setting.bacnet.enabled:
+        #     FlaskThread(target=BACServer().start_bac, daemon=True, kwargs={'config': setting.bacnet}).start()
 
         if setting.bacnet.master_enabled:
             Network.get_instance().start()
@@ -60,5 +60,5 @@ class Background:
                                                         'http_method': HttpMethod.GET}).start()
 
         """Sync mapped points values from BACnet > Generic points values"""
-        from .bacnet_server.models.model_point_store import BACnetPointStoreModel
-        BACnetPointStoreModel.sync_points_values_bp_to_gp_process(force_sync=True)
+        # from .bacnet_server.models.model_point_store import BACnetPointStoreModel
+        # BACnetPointStoreModel.sync_points_values_bp_to_gp_process(force_sync=True)

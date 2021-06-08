@@ -5,7 +5,7 @@ from flask import current_app
 from mrb.brige import MqttRestBridge
 from rubix_http.resource import RubixResource
 
-from src.bacnet_server import BACServer
+# from src.bacnet_server import BACServer
 from src.mqtt import MqttClient
 from src.utils.project import get_version
 
@@ -40,7 +40,7 @@ class Ping(RubixResource):
             'deployment_mode': deployment_mode,
             'bacnet': {
                 'enabled': setting.bacnet.enabled,
-                'status': BACServer().status(),
+                # 'status': BACServer().status(),
             },
             'mqtt': {
                 'enabled': setting.mqtt.enabled,
