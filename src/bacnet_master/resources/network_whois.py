@@ -1,7 +1,7 @@
 import logging
 from flask_restful import Resource, reqparse
 
-from src.bacnet_master.interfaces.bacnet_calls import BACnetCommon
+
 from src.bacnet_master.resources.device import Device
 from src.bacnet_master.services.device import Device as DeviceService
 

@@ -171,7 +171,8 @@ class Device:
         if not network_instance:
             return {"network_instance": "network instance is none"}
         point_object = point.point_obj_type
-        value = float(value)
+        if value != 'null':
+            value = float(value)
         if point_object == ObjType.BINARY_OUTPUT or point_object == ObjType.BINARY_VALUE:
             if value >= 1:
                 value = "active"
