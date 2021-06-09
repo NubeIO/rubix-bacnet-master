@@ -2,6 +2,7 @@ from flask_restful import Resource, reqparse, abort, marshal_with
 from src.bacnet_master.models.point import BacnetPointModel
 from src.bacnet_master.resources.fields import point_fields
 from src.bacnet_master.services.device import Device as DeviceService
+from src.bacnet_master.utils.functions import to_bool
 
 
 class Point(Resource):
@@ -99,9 +100,33 @@ class PointBACnetWrite(Resource):
             abort(404, message='Points not found')
         read = DeviceService.get_instance().write_point_pv(point, value, priority)
         if read:
-            abort(404, message={"error": "on point write"})
+            read(404, message={"error": "on point write"})
         return {
             "point_name": point.point_name,
             "point_value": value,
             "priority": priority
         }
+
+
+class PointRelease(Resource):
+    def post(self, pnt_uuid, priority, feedback):
+        point = BacnetPointModel.find_by_uuid(pnt_uuid)
+        value = 'null'
+        feedback = to_bool(feedback)
+        if not point:
+            abort(404, message='Points not found')
+        write = DeviceService.get_instance().write_point_pv(point, value, priority)
+        if write:
+            abort(404, message={"error": "on point write"})
+        if feedback:
+            read = DeviceService.get_instance().get_point_pv(point)
+            if not isinstance(read, (int, float)):
+                abort(404, message={"release": False})
+            else:
+                return {
+                    "release": True,
+                    "value": read,
+                    "priority": read
+                }
+        else:
+            return {"release": True}

@@ -1,13 +1,28 @@
-import time
-
-from bacpypes.basetypes import ServicesSupported
 
 import BAC0
 
-from src.bacnet_master.interfaces.device_supported_services import SupportedServices
-
 bacnet = BAC0.lite()
-#
+
+
+
+
+# print(bacnet.readMultiple('192.168.15.202 device 202 all'))
+# print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 all'))
+# print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 85'))
+aa = bacnet.read('192.168.15.202 analogOutput 1 87')
+
+
+def serialize_priority_array(priority_array):
+    priority_array_dict = {}
+    for i in range(16):
+        priority_array_dict[f'_{i + 1}'] = None if list(priority_array[i].keys())[0] == 'null' else \
+            list(priority_array[i].values())[0]
+    return priority_array_dict
+
+
+r = bacnet.read('192.168.15.202 analogOutput 1 87')
+r = serialize_priority_array(r.dict_contents())
+print(r)
 # # Write null @ 16
 # address = '192.168.15.196'
 # object_type = 'device'
@@ -24,11 +39,11 @@ bacnet = BAC0.lite()
 # # print(aaaa)
 
 # <addr> <type> <inst> <prop>
-print(bacnet.read('192.168.15.202/24:47808 analogOutput 1 presentValue'))  # or 85
-print(bacnet.read('192.168.15.202/24:47808 analogOutput 1 85'))
-# print(bacnet.read('202 analogOutput 1 85'))
-print(bacnet.read('192.168.15.202/24:47808 device 202 objectList'))  # or 76
-print(bacnet.read('192.168.15.202/24:47808 device 202 76'))
+# print(bacnet.read('192.168.15.202/24:47808 analogOutput 1 presentValue'))  # or 85
+# print(bacnet.read('192.168.15.202/24:47808 analogOutput 1 85'))
+# # print(bacnet.read('202 analogOutput 1 85'))
+# print(bacnet.read('192.168.15.202/24:47808 device 202 objectList'))  # or 76
+# print(bacnet.read('192.168.15.202/24:47808 device 202 76'))
 # for x in range(len(ss)):
 #     print(22222)
 #     print(x)
@@ -42,8 +57,3 @@ print(bacnet.read('192.168.15.202/24:47808 device 202 76'))
 #
 # readProperty = get_key(14)
 # print(aa)
-
-number = 1
-
-if 1 <= number <= 65534:
-    print(1111)

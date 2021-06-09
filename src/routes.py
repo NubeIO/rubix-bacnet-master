@@ -6,7 +6,7 @@ from src.bacnet_master.resources.device import Device, DeviceList, \
 from src.bacnet_master.resources.network import Network, NetworkList, NetworksIds
 from src.bacnet_master.resources.network_whois import Whois, UnknownDeviceObjects, \
     UnknownReadPointPv
-from src.bacnet_master.resources.point import Point, PointList, PointBACnetRead, PointBACnetWrite
+from src.bacnet_master.resources.point import Point, PointList, PointBACnetRead, PointBACnetWrite, PointRelease
 
 from src.system.resources.ping import Ping
 
@@ -27,6 +27,8 @@ api_bacnet_master.add_resource(Whois, '/b/network/whois/<string:net_uuid>')
 api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:pnt_uuid>')  # read point pv
 api_bacnet_master.add_resource(PointBACnetWrite,
                                '/b/points/write/pv/<string:pnt_uuid>/<string:value>/<string:priority>')  # write point pv
+api_bacnet_master.add_resource(PointRelease,
+                               '/b/points/write/release/<string:pnt_uuid>/<string:priority>/<string:feedback>')  # release point pv
 
 api_bacnet_master.add_resource(BuildPointsList, '/b/points/point_list/<string:dev_uuid>')  # build points list
 api_bacnet_master.add_resource(DeviceObjectList, '/b/device/objects/<string:dev_uuid>')
