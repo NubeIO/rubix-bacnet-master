@@ -80,17 +80,26 @@ class PointList(Resource):
 
 
 class PointBACnetRead(Resource):
-    def get(self, pnt_uuid):
+    def get(self, pnt_uuid, get_priority):
         point = BacnetPointModel.find_by_uuid(pnt_uuid)
+        get_priority = to_bool(get_priority)
         if not point:
             abort(404, message='Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
         if not isinstance(read, (int, float)):
-            abort(404, message='Failed to read point value')
-        return {
-            "point_name": point.point_name,
-            "point_value": read
-        }
+            abort(404, message=f"error:{read}")
+        if get_priority:
+            priority = DeviceService.get_instance().get_point_priority(point)
+            return {
+                "point_name": point.point_name,
+                "point_value": read,
+                "priority": priority
+            }
+        else:
+            return {
+                "point_name": point.point_name,
+                "point_value": read
+            }
 
 
 class PointBACnetWrite(Resource):

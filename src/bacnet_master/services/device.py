@@ -5,6 +5,7 @@ from src.bacnet_master.interfaces.object_property import ObjProperty
 from src.bacnet_master.models.device import BacnetDeviceModel
 from src.bacnet_master.models.network import BacnetNetworkModel
 from src.bacnet_master.services.network import Network
+from src.bacnet_master.utils.functions import serialize_priority_array
 
 logger = logging.getLogger(__name__)
 
@@ -159,6 +160,30 @@ class Device:
             try:
                 action = network_instance.read(read)
                 return action
+            except:
+                logger.info(f"DO POINT WRITE ERROR:")
+                return {"error": "on point write"}
+
+    def get_point_priority(self, point):
+        device = BacnetDeviceModel.find_by_device_uuid(point.device_uuid)
+        if not device:
+            return {"device": "device is none"}
+        network_instance = self._get_network_from_device(device)
+        object_type = point.point_obj_type.name
+        object_instance = point.point_obj_id
+        prop = ObjProperty.priorityArray.value
+        print(object_type, object_instance, prop)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
+        read = self._common_object(device, object_type=object_type,
+                                   object_instance=object_instance,
+                                   prop=prop)
+
+        if network_instance:
+            try:
+                action = network_instance.read(read)
+                r = serialize_priority_array(action.dict_contents())
+                return r
             except:
                 logger.info(f"DO POINT WRITE ERROR:")
                 return {"error": "on point write"}
@@ -349,5 +374,3 @@ class Device:
                 return network_instance.read(read)
         except:
             return {}
-
-

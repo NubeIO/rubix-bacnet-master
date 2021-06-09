@@ -24,7 +24,7 @@ api_bacnet_master.add_resource(PointList, '/points')
 
 # bacnet network calls
 api_bacnet_master.add_resource(Whois, '/b/network/whois/<string:net_uuid>')
-api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:pnt_uuid>')  # read point pv
+api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:pnt_uuid>/<string:get_priority>')  # read point pv
 api_bacnet_master.add_resource(PointBACnetWrite,
                                '/b/points/write/pv/<string:pnt_uuid>/<string:value>/<string:priority>')  # write point pv
 api_bacnet_master.add_resource(PointRelease,

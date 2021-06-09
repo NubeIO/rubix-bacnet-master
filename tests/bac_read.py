@@ -1,6 +1,8 @@
 
 import BAC0
 
+from src.bacnet_master.utils.functions import serialize_priority_array
+
 bacnet = BAC0.lite()
 
 
@@ -12,12 +14,6 @@ bacnet = BAC0.lite()
 aa = bacnet.read('192.168.15.202 analogOutput 1 87')
 
 
-def serialize_priority_array(priority_array):
-    priority_array_dict = {}
-    for i in range(16):
-        priority_array_dict[f'_{i + 1}'] = None if list(priority_array[i].keys())[0] == 'null' else \
-            list(priority_array[i].values())[0]
-    return priority_array_dict
 
 
 r = bacnet.read('192.168.15.202 analogOutput 1 87')
@@ -28,6 +24,7 @@ print(r)
 # object_type = 'device'
 # object_instance = "1234"
 #
+# read_vals = bacnet.read('192.168.15.202 analogOutput 1 87')
 # read_vals = f'{address} {object_type} {object_instance} 97'
 
 # aaa = SupportedServices.get(address, object_type, object_instance)
