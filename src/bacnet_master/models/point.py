@@ -1,8 +1,9 @@
 from src import db
 from src.bacnet_master.interfaces.device import ObjType
+from src.bacnet_master.models.model_base import ModelBase
 
 
-class BacnetPointModel(db.Model):
+class BacnetPointModel(ModelBase):
     __tablename__ = 'bacnet_points'
     point_name = db.Column(db.String(80), unique=False, nullable=False)
     point_enable = db.Column(db.Boolean())
@@ -15,13 +16,5 @@ class BacnetPointModel(db.Model):
         return f"Device(point_uuid = {self.device_uuid})"
 
     @classmethod
-    def find_by_uuid(cls, point_uuid):
+    def find_by_point_uuid(cls, point_uuid):
         return cls.query.filter_by(point_uuid=point_uuid).first()
-
-    def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()

@@ -1,90 +1,79 @@
 import logging
 
-from flask_restful import Resource, reqparse, fields, marshal_with, abort
+from flask_restful import reqparse, fields, marshal_with
+from rubix_http.exceptions.exception import NotFoundException, BadDataException
+from rubix_http.resource import RubixResource
 
 from src.bacnet_master.models.network import BacnetNetworkModel
-from src.bacnet_master.resources.fields import network_fields
+from src.bacnet_master.resources.rest_schema.schema_network import network_all_attributes, network_all_fields, \
+    network_extra_attributes
 from src.bacnet_master.services.network import Network as NetworkService
-from src.bacnet_master.services.device import Device as DeviceService
+
 logger = logging.getLogger(__name__)
 
 
-class Network(Resource):
+class NetworkBase(RubixResource):
     parser = reqparse.RequestParser()
-    parser.add_argument('network_name',
-                        type=str,
-                        required=False,
-                        help='network_ip must be a string'
-                        )
-    parser.add_argument('network_enable',
-                        type=bool,
-                        required=False,
-                        help='enable/disable operation'
-                        )
-    parser.add_argument('network_ip',
-                        type=str,
-                        required=True,
-                        help='network_ip must be a string'
-                        )
-    parser.add_argument('network_mask',
-                        type=int,
-                        required=True,
-                        help='netmask must be an int length 2'
-                        )
-    parser.add_argument('network_port',
-                        type=int,
-                        required=True,
-                        help='network_port must must be an int length 4'
-                        )
-    parser.add_argument('network_device_id',
-                        type=int,
-                        required=True,
-                        help='bacnet id is needed'
-                        )
-    parser.add_argument('network_device_name',
-                        type=str,
-                        required=True,
-                        help='bacnet device name is needed'
-                        )
+    for attr in network_all_attributes:
+        parser.add_argument(attr,
+                            type=network_all_attributes[attr]['type'],
+                            required=network_all_attributes[attr].get('required', None),
+                            help=network_all_attributes[attr].get('help', None),
+                            store_missing=False)
 
-    @marshal_with(network_fields)
-    def get(self, uuid):
-        network = BacnetNetworkModel.find_by_network_uuid(uuid)
+    post_parser = reqparse.RequestParser()
+    all_attributes = {**network_extra_attributes, **network_all_attributes}
+    for attr in all_attributes:
+        post_parser.add_argument(attr,
+                                 type=all_attributes[attr]['type'],
+                                 required=all_attributes[attr].get('required', None),
+                                 help=all_attributes[attr].get('help', None),
+                                 store_missing=False)
+
+
+class Network(NetworkBase):
+    parser_patch = reqparse.RequestParser()
+    for attr in network_all_attributes:
+        parser_patch.add_argument(attr,
+                                  type=network_all_attributes[attr]['type'],
+                                  required=False,
+                                  help=network_all_attributes[attr].get('help', None),
+                                  store_missing=False)
+
+    @classmethod
+    @marshal_with(network_all_fields)
+    def get(cls, network_uuid):
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
         if not network:
-            abort(404, message='Network not found')
+            raise NotFoundException("Network not found")
         return network
 
-    @marshal_with(network_fields)
-    def post(self, uuid):
-        if BacnetNetworkModel.find_by_network_uuid(uuid):
-            return abort(409, message=f"An Network with network_uuid '{uuid}' already exists.")
+    @classmethod
+    @marshal_with(network_all_fields)
+    def put(cls, network_uuid):
         data = Network.parser.parse_args()
-        # _uuid = str(uuid.uuid4())
-        network = Network.create_network_model_obj(uuid, data)
-        network.save_to_db()
-        NetworkService.get_instance().add_network(network)
-        return network, 201
-
-    @marshal_with(network_fields)
-    def put(self, uuid):
-        data = Network.parser.parse_args()
-        network = BacnetNetworkModel.find_by_network_uuid(uuid)
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
         if network is None:
-            network = Network.create_network_model_obj(uuid, data)
+            network = Network.create_network_model_obj(network_uuid, data)
+            network.save_to_db()
         else:
-            network.network_name = data['network_name']
-            network.network_enable = data['network_enable']
-            network.network_ip = data['network_ip']
-            network.network_mask = data['network_mask']
-            network.network_port = data['network_port']
-            network.network_device_id = data['network_device_id']
-            network.network_device_name = data['network_device_name']
-        network.save_to_db()
+            network.update(**data)
         NetworkService.get_instance().add_network(network)
-        return network, 201
+        return network
 
-    def delete(self, uuid):
-        network_uuid = uuid
+    @classmethod
+    @marshal_with(network_all_fields)
+    def patch(cls, network_uuid):
+        data = Network.parser_patch.parse_args()
+        network: BacnetNetworkModel = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if network is None:
+            raise NotFoundException("Network not found")
+        network.update(**data)
+        NetworkService.get_instance().add_network(network)
+        return network
+
+    @classmethod
+    def delete(cls, network_uuid):
         network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
         if network:
             network.delete_from_db()
@@ -93,18 +82,31 @@ class Network(Resource):
 
     @staticmethod
     def create_network_model_obj(network_uuid, data):
-        return BacnetNetworkModel(network_uuid=network_uuid, network_name=data['network_name'], network_ip=data['network_ip'], network_mask=data['network_mask'],
-                                  network_port=data['network_port'], network_device_id=data['network_device_id'],
-                                  network_device_name=data['network_device_name'],  network_enable=data['network_enable'])
+        return BacnetNetworkModel(network_uuid=network_uuid, **data)
 
 
-class NetworkList(Resource):
-    @marshal_with(network_fields, envelope="networks")
-    def get(self):
-        return BacnetNetworkModel.query.all()
+class NetworkList(NetworkBase):
+    @classmethod
+    @marshal_with(network_all_fields, envelope="networks")
+    def get(cls):
+        return BacnetNetworkModel.find_all()
+
+    @classmethod
+    @marshal_with(network_all_fields)
+    def post(cls):
+        data = NetworkList.post_parser.parse_args()
+        network_uuid = data.pop('network_uuid')
+        if BacnetNetworkModel.find_by_network_uuid(network_uuid):
+            raise BadDataException(f"Network with network_uuid '{network_uuid}' already exists.")
+        network = Network.create_network_model_obj(network_uuid, data)
+        network.save_to_db()
+        NetworkService.get_instance().add_network(network)
+        return network
 
 
-class NetworksIds(Resource):
+class NetworksIds(RubixResource):
+
+    @classmethod
     @marshal_with({'network_uuid': fields.String}, envelope="networks")
-    def get(self):
-        return BacnetNetworkModel.query.all()
+    def get(cls):
+        return BacnetNetworkModel.find_all()

@@ -14,12 +14,12 @@ bp_bacnet_master = Blueprint('bacnet_master', __name__, url_prefix='/api/bm')
 api_bacnet_master = Api(bp_bacnet_master)
 
 # master
-api_bacnet_master.add_resource(Device, '/device/<string:uuid>')
-api_bacnet_master.add_resource(DeviceList, '/devices')
-api_bacnet_master.add_resource(Network, '/network/<string:uuid>')
+api_bacnet_master.add_resource(Network, '/network/<string:network_uuid>')
 api_bacnet_master.add_resource(NetworkList, '/networks')
 api_bacnet_master.add_resource(NetworksIds, '/networks/ids')
-api_bacnet_master.add_resource(Point, '/point/<string:uuid>')
+api_bacnet_master.add_resource(Device, '/device/<string:device_uuid>')
+api_bacnet_master.add_resource(DeviceList, '/devices')
+api_bacnet_master.add_resource(Point, '/point/<string:point_uuid>')
 api_bacnet_master.add_resource(PointList, '/points')
 
 # bacnet network calls
