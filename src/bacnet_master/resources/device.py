@@ -1,163 +1,131 @@
 import logging
 
-from flask_restful import Resource, reqparse, abort, marshal_with
+from flask_restful import reqparse, marshal_with
+from rubix_http.exceptions.exception import NotFoundException, BadDataException, InternalServerErrorException
+from rubix_http.resource import RubixResource
 
 from src.bacnet_master.models.device import BacnetDeviceModel
-from src.bacnet_master.resources.fields import device_fields
+from src.bacnet_master.resources.rest_schema.schema_device import device_all_attributes, device_all_fields, \
+    device_extra_attributes
 from src.bacnet_master.services.device import Device as DeviceService
 
 logger = logging.getLogger(__name__)
 
 
-class Device(Resource):
+class DeviceBase(RubixResource):
     parser = reqparse.RequestParser()
-    parser.add_argument('device_name',
-                        type=str,
-                        required=False,
-                        help='BACnet mstp device device_mac address'
-                        )
-    parser.add_argument('device_enable',
-                        type=bool,
-                        required=False,
-                        help='enable/disable operation'
-                        )
-    parser.add_argument('device_mac',
-                        type=int,
-                        required=False,
-                        help='BACnet mstp device device_mac address'
-                        )
-    parser.add_argument('device_id',
-                        type=int,
-                        required=True,
-                        help='Every device needs a bacnet device id'
-                        )
-    parser.add_argument('device_ip',
-                        type=str,
-                        required=False,
-                        help='Every device needs a network device_ip.'
-                        )
-    parser.add_argument('device_mask',
-                        type=int,
-                        required=False,
-                        help='Every device needs a network device_mask'
-                        )
-    parser.add_argument('device_port',
-                        type=int,
-                        required=False,
-                        help='Every device needs a network device_port'
-                        )
-    parser.add_argument('network_uuid',
-                        type=str,
-                        required=True,
-                        help='Every device needs a network device_uuid'
-                        )
-    parser.add_argument('type_mstp',
-                        type=bool,
-                        required=False,
-                        help='True if device is type MSTP'
-                        )
-    parser.add_argument('supports_rpm',
-                        type=bool,
-                        required=False,
-                        help='True if device support read property multiple'
-                        )
-    parser.add_argument('supports_wpm',
-                        type=bool,
-                        required=False,
-                        help='True if device support write property multiple'
-                        )
-    parser.add_argument('network_number',
-                        type=int,
-                        required=False,
-                        help='Used for discovering networking (set to 0 to disable)'
-                        )
+    for attr in device_all_attributes:
+        parser.add_argument(attr,
+                            type=device_all_attributes[attr]['type'],
+                            required=device_all_attributes[attr].get('required', None),
+                            help=device_all_attributes[attr].get('help', None),
+                            store_missing=False)
 
-    @marshal_with(device_fields)
-    def get(self, uuid):
-        device = BacnetDeviceModel.find_by_device_uuid(uuid)
+    post_parser = reqparse.RequestParser()
+    all_attributes = {**device_extra_attributes, **device_all_attributes}
+    for attr in all_attributes:
+        post_parser.add_argument(attr,
+                                 type=all_attributes[attr]['type'],
+                                 required=all_attributes[attr].get('required', None),
+                                 help=all_attributes[attr].get('help', None),
+                                 store_missing=False)
+
+
+class Device(DeviceBase):
+    parser_patch = reqparse.RequestParser()
+    for attr in device_all_attributes:
+        parser_patch.add_argument(attr,
+                                  type=device_all_attributes[attr]['type'],
+                                  required=False,
+                                  help=device_all_attributes[attr].get('help', None),
+                                  store_missing=False)
+
+    @classmethod
+    @marshal_with(device_all_fields)
+    def get(cls, device_uuid):
+        device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if not device:
-            abort(404, message='Device not found.')
+            raise NotFoundException("Device not found")
         return device
 
-    @marshal_with(device_fields)
-    def post(self, uuid):
-        if BacnetDeviceModel.find_by_device_uuid(uuid):
-            return {'message': "An device with device_uuid '{}' already exists.".format(uuid)}, 400
+    @classmethod
+    @marshal_with(device_all_fields)
+    def put(cls, device_uuid):
         data = Device.parser.parse_args()
-        device = Device.create_device_model_obj(uuid, data)
-        if device.find_by_device_uuid(uuid) is not None:
-            abort(409, message="Already exist this value")
-        device.save_to_db()
-        return device, 201
-
-    @marshal_with(device_fields)
-    def put(self, uuid):
-        data = Device.parser.parse_args()
-        device = BacnetDeviceModel.find_by_device_uuid(uuid)
+        device: BacnetDeviceModel = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if device is None:
-            device = Device.create_device_model_obj(uuid, data)
+            device = Device.create_device_model_obj(device_uuid, data)
+            device.save_to_db()
         else:
-            device.device_name = data['device_name']
-            device.device_mac = data['device_mac']
-            device.device_id = data['device_id']
-            device.device_ip = data['device_ip']
-            device.device_mask = data['device_mask']
-            device.device_port = data['device_port']
-            device.network_id = data['network_uuid']
-            device.type_mstp = data['type_mstp']
-            device.supports_rpm = data['supports_rpm']
-            device.supports_wpm = data['supports_wpm']
-            device.network_number = data['network_number']
-
-        device.save_to_db()
+            device.update(**data)
         return device
 
-    def delete(self, uuid):
-        device = BacnetDeviceModel.find_by_device_uuid(uuid)
+    @classmethod
+    @marshal_with(device_all_fields)
+    def patch(cls, device_uuid):
+        data = Device.parser_patch.parse_args()
+        device: BacnetDeviceModel = BacnetDeviceModel.find_by_device_uuid(device_uuid)
+        if device is None:
+            raise NotFoundException("Device not found")
+        device.update(**data)
+        return device
+
+    @classmethod
+    def delete(cls, device_uuid):
+        device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if device:
             device.delete_from_db()
         return '', 204
 
     @staticmethod
     def create_device_model_obj(device_uuid, data):
-        return BacnetDeviceModel(device_uuid=device_uuid, device_name=data['device_name'],
-                                 device_mac=data['device_mac'],
-                                 device_id=data['device_id'], device_ip=data['device_ip'],
-                                 device_mask=data['device_mask'], device_port=data['device_port'],
-                                 network_uuid=data['network_uuid'], network_number=data['network_number'],
-                                 type_mstp=data['type_mstp'], supports_rpm=data['supports_rpm'], supports_wpm=data['supports_wpm'])
+        return BacnetDeviceModel(device_uuid=device_uuid, **data)
 
 
-class DeviceList(Resource):
-    @marshal_with(device_fields, envelope="devices")
-    def get(self):
-        return BacnetDeviceModel.query.all()
+class DeviceList(DeviceBase):
+    @classmethod
+    @marshal_with(device_all_fields, envelope="devices")
+    def get(cls):
+        return BacnetDeviceModel.find_all()
+
+    @classmethod
+    @marshal_with(device_all_fields)
+    def post(cls):
+        data = Device.post_parser.parse_args()
+        device_uuid = data.pop('device_uuid')
+        if BacnetDeviceModel.find_by_device_uuid(device_uuid):
+            raise BadDataException(f"Device with device_uuid '{device_uuid}' already exists.")
+        device = Device.create_device_model_obj(device_uuid, data)
+        device.save_to_db()
+        return device
 
 
-class DeviceObjectList(Resource):
-    def get(self, dev_uuid):
-        response = {}
+class DeviceObjectList(RubixResource):
+    @classmethod
+    def get(cls, dev_uuid):
         device = BacnetDeviceModel.find_by_device_uuid(dev_uuid)
         if not device:
-            abort(404, message='Device Not found')
-        response['network_uuid'] = device.network.network_uuid
-        response['device_uuid'] = device.device_uuid
-        response['device_mac'] = device.device_mac
-        try:
-            response['points'] = DeviceService.get_instance().get_object_list(device)
-        except Exception as e:
-            abort(500, message=str(e))
-        return response
-
-
-class BuildPointsList(Resource):
-    def get(self, dev_uuid):
-        device = BacnetDeviceModel.find_by_device_uuid(dev_uuid)
-        if not device:
-            abort(404, message='Points not found')
-        read = DeviceService.get_instance().read_point_list(device)
-        if not read:
-            abort(404, message='Cant read point')
-        return {
-            "points": read
+            raise NotFoundException('Device not found')
+        res = {
+            'network_uuid': device.network.network_uuid,
+            'device_uuid': device.device_uuid,
+            'device_mac': device.device_mac
         }
+        try:
+            points = DeviceService.get_instance().get_object_list(device)
+            res = {**res, 'points': points}
+        except Exception as e:
+            raise InternalServerErrorException(str(e))
+        return res
+
+
+class BuildPointsList(RubixResource):
+    @classmethod
+    def get(cls, dev_uuid):
+        device = BacnetDeviceModel.find_by_device_uuid(dev_uuid)
+        if not device:
+            raise NotFoundException('Points not found')
+        points = DeviceService.get_instance().read_point_list(device)
+        if not points:
+            raise NotFoundException("Can't read point")
+        return {"points": points}

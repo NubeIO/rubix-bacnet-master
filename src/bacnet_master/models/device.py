@@ -1,7 +1,8 @@
 from src import db
+from src.bacnet_master.models.model_base import ModelBase
 
 
-class BacnetDeviceModel(db.Model):
+class BacnetDeviceModel(ModelBase):
     __tablename__ = 'bacnet_devices'
     device_name = db.Column(db.String(80), unique=False, nullable=False)
     device_enable = db.Column(db.Boolean())
@@ -24,11 +25,3 @@ class BacnetDeviceModel(db.Model):
     @classmethod
     def find_by_device_uuid(cls, device_uuid):
         return cls.query.filter_by(device_uuid=device_uuid).first()
-
-    def save_to_db(self):
-        db.session.add(self)
-        db.session.commit()
-
-    def delete_from_db(self):
-        db.session.delete(self)
-        db.session.commit()
