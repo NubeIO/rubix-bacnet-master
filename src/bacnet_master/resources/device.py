@@ -16,6 +16,11 @@ class Device(Resource):
                         required=False,
                         help='BACnet mstp device device_mac address'
                         )
+    parser.add_argument('device_enable',
+                        type=bool,
+                        required=False,
+                        help='enable/disable operation'
+                        )
     parser.add_argument('device_mac',
                         type=int,
                         required=False,
@@ -50,6 +55,16 @@ class Device(Resource):
                         type=bool,
                         required=False,
                         help='True if device is type MSTP'
+                        )
+    parser.add_argument('supports_rpm',
+                        type=bool,
+                        required=False,
+                        help='True if device support read property multiple'
+                        )
+    parser.add_argument('supports_wpm',
+                        type=bool,
+                        required=False,
+                        help='True if device support write property multiple'
                         )
     parser.add_argument('network_number',
                         type=int,
@@ -89,8 +104,11 @@ class Device(Resource):
             device.device_mask = data['device_mask']
             device.device_port = data['device_port']
             device.network_id = data['network_uuid']
-            device.network_number = data['network_number']
             device.type_mstp = data['type_mstp']
+            device.supports_rpm = data['supports_rpm']
+            device.supports_wpm = data['supports_wpm']
+            device.network_number = data['network_number']
+
         device.save_to_db()
         return device
 
@@ -107,7 +125,7 @@ class Device(Resource):
                                  device_id=data['device_id'], device_ip=data['device_ip'],
                                  device_mask=data['device_mask'], device_port=data['device_port'],
                                  network_uuid=data['network_uuid'], network_number=data['network_number'],
-                                 type_mstp=data['type_mstp'])
+                                 type_mstp=data['type_mstp'], supports_rpm=data['supports_rpm'], supports_wpm=data['supports_wpm'])
 
 
 class DeviceList(Resource):

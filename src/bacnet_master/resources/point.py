@@ -12,6 +12,11 @@ class Point(Resource):
                         required=False,
                         help='True if device is type MSTP'
                         )
+    parser.add_argument('point_enable',
+                        type=bool,
+                        required=False,
+                        help='enable/disable operation'
+                        )
     parser.add_argument('point_obj_id',
                         type=int,
                         required=True,
@@ -52,6 +57,7 @@ class Point(Resource):
             p = Point.create_model(uuid, data)
         else:
             p.point_name = data['point_name']
+            p.point_enable = data['point_enable']
             p.point_obj_id = data['point_obj_id']
             p.point_obj_type = data['point_obj_type']
             p.device_uuid = data['device_uuid']
@@ -67,7 +73,7 @@ class Point(Resource):
     @staticmethod
     def create_model(uuid, data):
         return BacnetPointModel(point_uuid=uuid, point_name=data['point_name'], point_obj_id=data['point_obj_id'],
-                                point_obj_type=data['point_obj_type'], device_uuid=data['device_uuid'])
+                                point_obj_type=data['point_obj_type'], device_uuid=data['device_uuid'], point_enable=data['point_enable'])
 
 
 class PointList(Resource):
