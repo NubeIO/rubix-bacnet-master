@@ -4,7 +4,7 @@ from src import db
 class BacnetDeviceModel(db.Model):
     __tablename__ = 'bacnet_devices'
     device_name = db.Column(db.String(80), unique=False, nullable=False)
-    device_enable = db.Column(db.Boolean(), nullable=False)
+    device_enable = db.Column(db.Boolean())
     device_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     device_mac = db.Column(db.Integer(), unique=False, nullable=False)
     device_id = db.Column(db.Integer(), unique=False, nullable=False)
@@ -14,8 +14,9 @@ class BacnetDeviceModel(db.Model):
     type_mstp = db.Column(db.Boolean())
     supports_rpm = db.Column(db.Boolean())
     supports_wpm = db.Column(db.Boolean())
-    network_uuid = db.Column(db.String, db.ForeignKey('bacnet_networks.network_uuid'))
     network_number = db.Column(db.Integer())
+    network_uuid = db.Column(db.String, db.ForeignKey('bacnet_networks.network_uuid'))
+    points = db.relationship('BacnetPointModel', cascade="all,delete", backref='points', lazy=True)
 
     def __repr__(self):
         return f"Device(device_uuid = {self.network_uuid})"

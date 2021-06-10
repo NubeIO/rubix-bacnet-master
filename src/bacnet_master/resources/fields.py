@@ -1,4 +1,12 @@
 from flask_restful import fields
+point_fields = {
+    'point_name': fields.String,
+    'point_enable': fields.Boolean,
+    'point_uuid': fields.String,
+    'point_obj_id': fields.Integer,
+    'point_obj_type': fields.String,
+    'device_uuid': fields.String,
+}
 
 device_fields = {
     'device_name': fields.String,
@@ -14,6 +22,7 @@ device_fields = {
     'type_mstp': fields.Boolean,
     'supports_rpm': fields.Boolean,
     'supports_wpm': fields.Boolean,
+    'points': fields.List(fields.Nested(point_fields))
 
 }
 
@@ -29,11 +38,3 @@ network_fields = {
     'devices': fields.List(fields.Nested(device_fields))
 }
 
-point_fields = {
-    'point_name': fields.String,
-    'point_enable': fields.Boolean,
-    'point_uuid': fields.String,
-    'point_obj_id': fields.Integer,
-    'point_obj_type': fields.String,
-    'device_uuid': fields.String,
-}
