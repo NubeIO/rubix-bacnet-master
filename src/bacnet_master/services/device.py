@@ -172,7 +172,6 @@ class Device:
         object_type = point.point_obj_type.name
         object_instance = point.point_obj_id
         prop = ObjProperty.priorityArray.value
-        print(object_type, object_instance, prop)
         if not network_instance:
             return {"network_instance": "network instance is none"}
         read = self._common_object(device, object_type=object_type,
@@ -212,6 +211,78 @@ class Device:
             except:
                 logger.info(f"DO POINT WRITE ERROR:")
                 return True
+
+    def read_point_list_by_network(self, network, network_uuid, timeout):
+        net = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not net:
+            return {"net": "net is none"}
+        network_instance = self._get_network_from_network(net)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
+        props = [ObjProperty.objectName.name, ObjProperty.presentValue.name]
+        _list = {}
+        build_points_list = {}
+        for device in network.get("devices"):
+            network_uuid = device["network_uuid"]
+            device_name = device["device_name"]
+            device_uuid = device["device_uuid"]
+            device_id = device["device_id"]
+            device_ip = device["device_ip"]
+            point_uuid_list = []
+            point_name_list = []
+            for point in device.get("points"):
+                for items in point:
+                    point_obj_type = point.get("point_obj_type")
+                    point_uuid = point.get("point_uuid")
+                    point_uuid_list.append(point_uuid)
+                    point_uuid_list = list(dict.fromkeys(point_uuid_list))
+                    point_name = point.get("point_name")
+                    point_name_list.append(point_name)
+                    point_name_list = list(dict.fromkeys(point_name_list))
+                    point_obj_id = point.get("point_obj_id")
+                    point_key = f"{point_obj_type}:{point_obj_id}"
+                    _list.update({point_key: props})
+            _rpm = {'address': device_ip,
+                    'objects': _list
+                    }
+
+            bacnet_return = network_instance.readMultiple(device_ip, _rpm, timeout=timeout)
+
+            if bacnet_return != ['']:
+                count = 0
+                for _point in list(bacnet_return):
+                    device_points = bacnet_return.get(_point)
+                    point_uuid = point_uuid_list[count]
+                    new_point_uuid = ("uuid", point_uuid)
+                    device_points.append(new_point_uuid)
+                    point_name = point_name_list[count]
+                    new_point_name = ("name", point_name)
+                    device_points.append(new_point_name)
+                    new_point_key = f"{_point[0]}_{_point[1]}"
+                    bacnet_return[new_point_key] = bacnet_return.pop(_point)
+                    count = count + 1
+                    for _objects in list(device_points):
+                        _device_points = device_points
+                        for iii in list(_device_points):
+                            try:
+                                obj = f"{_objects[0]}"
+                                value = f"{_objects[1]}"
+                                new_object = {obj: value}
+                                _device_points.remove(_objects)
+                                _device_points.append(new_object)
+                            except:
+                                logger.info(f"ERROR on: read_point_list_by_network")
+
+                _dev = {device_uuid: {"deviceUUID": device_uuid, "deviceName": device_name, "deviceId": device_id,
+                                      "points": bacnet_return}}
+                build_points_list.update(_dev)
+                _list = {}
+            else:
+                build_points_list.update({device_uuid: "offline"})
+                build_points_list[device_uuid] = {"deviceUUID": device_uuid, "deviceName": device_name,
+                                                  "deviceId": device_id, "points": False}
+        points_list = {network_uuid: build_points_list}
+        return points_list
 
     def read_point_list(self, device):
         network_instance = self._get_network_from_device(device)

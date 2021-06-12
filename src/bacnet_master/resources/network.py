@@ -105,7 +105,6 @@ class NetworkList(NetworkBase):
 
 
 class NetworksIds(RubixResource):
-
     @classmethod
     @marshal_with({'network_uuid': fields.String}, envelope="networks")
     def get(cls):

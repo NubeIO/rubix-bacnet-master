@@ -2,7 +2,7 @@ from flask import Blueprint
 from flask_restful import Api
 
 from src.bacnet_master.resources.device import Device, DeviceList, \
-    DeviceObjectList, BuildPointsList
+    DeviceObjectList, BuildPointsList, GetAllPoints
 from src.bacnet_master.resources.network import Network, NetworkList, NetworksIds
 from src.bacnet_master.resources.network_whois import Whois, UnknownDeviceObjects, \
     UnknownReadPointPv
@@ -31,6 +31,7 @@ api_bacnet_master.add_resource(PointRelease,
                                '/b/points/write/release/<string:pnt_uuid>/<string:priority>/<string:feedback>')  # release point pv
 
 api_bacnet_master.add_resource(BuildPointsList, '/b/points/point_list/<string:dev_uuid>')  # build points list
+api_bacnet_master.add_resource(GetAllPoints, '/b/points/network_point_list/<string:network_uuid>/<string:timeout>')  # build points list
 api_bacnet_master.add_resource(DeviceObjectList, '/b/device/objects/<string:dev_uuid>')
 api_bacnet_master.add_resource(UnknownDeviceObjects, '/b/device/unknown/objects/<string:net_uuid>')
 api_bacnet_master.add_resource(UnknownReadPointPv, '/b/point/unknown/point_pv/<string:net_uuid>')

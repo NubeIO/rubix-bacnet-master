@@ -1,5 +1,5 @@
 import logging
-
+import requests
 from flask_restful import reqparse, marshal_with
 from rubix_http.exceptions.exception import NotFoundException, BadDataException, InternalServerErrorException
 from rubix_http.resource import RubixResource
@@ -129,3 +129,14 @@ class BuildPointsList(RubixResource):
         if not points:
             raise NotFoundException("Can't read point")
         return {"points": points}
+
+
+class GetAllPoints(RubixResource):
+    @classmethod
+    def get(cls, network_uuid, timeout):
+        host = '0.0.0.0'
+        port = '1718'
+        url = f"http://{host}:{port}/api/bm/network/{network_uuid}"
+        network = requests.get(url).json()
+        data = DeviceService.get_instance().read_point_list_by_network(network, network_uuid, int(timeout))
+        return data
