@@ -107,6 +107,16 @@ class Device(DeviceBase):
         return BacnetDeviceModel(device_uuid=device_uuid, **data)
 
 
+class DeleteDevices(DeviceBase):
+    @classmethod
+    def delete(cls, network_uuid):
+        device = BacnetDeviceModel.delete_all_device_by_network(network_uuid)
+        if device:
+            return '', 204
+        else:
+            return '', 404
+
+
 class DeviceList(DeviceBase):
     @classmethod
     @marshal_with(device_all_fields, envelope="devices")

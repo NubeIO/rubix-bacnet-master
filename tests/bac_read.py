@@ -1,24 +1,15 @@
-
 import BAC0
 
-from src.bacnet_master.utils.functions import serialize_priority_array
-
-bacnet = BAC0.lite()
-
-
-
-
-# print(bacnet.readMultiple('192.168.15.202 device 202 all'))
+bacnet = BAC0.lite('192.168.15.102/24:47808')
+# print(bacnet.readMultiple('192.168.15.12 device 260001 all'))
 # print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 all'))
 # print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 85'))
-aa = bacnet.read('192.168.15.202 analogOutput 1 87')
+print(bacnet.read('192.168.15.202/24 device 202 objectList', timeout=5))
 
 
-
-
-r = bacnet.read('192.168.15.202 analogOutput 1 87')
-r = serialize_priority_array(r.dict_contents())
-print(r)
+# r = bacnet.read('192.168.15.202 analogOutput 1 87')
+#
+# print(r)
 # # Write null @ 16
 # address = '192.168.15.196'
 # object_type = 'device'

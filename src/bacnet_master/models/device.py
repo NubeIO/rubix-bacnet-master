@@ -23,5 +23,16 @@ class BacnetDeviceModel(ModelBase):
         return f"Device(device_uuid = {self.network_uuid})"
 
     @classmethod
+    def delete_all_device_by_network(cls, network_uuid):
+        try:
+            cls.query.filter_by(network_uuid=network_uuid).delete()
+            db.session.commit()
+            return True
+
+        except:
+            db.session.rollback()
+            return False
+
+    @classmethod
     def find_by_device_uuid(cls, device_uuid):
         return cls.query.filter_by(device_uuid=device_uuid).first()

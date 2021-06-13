@@ -42,36 +42,43 @@ class Whois(NetworkWhois):
                                         range_start=range_start,
                                         range_end=range_end)
 
-        print(99999)
+        print(3333)
         print(devices)
-        print(99999)
+        print(3333)
         if add_devices:
             host = '0.0.0.0'
             port = '1718'
             url = f"http://{host}:{port}/api/bm/device"
-            for device in devices:
-                print(device)
-        return devices
-                # _point_group = devices.get("points")
-                # _point_group = _point_group.get(point_group)
-                # if _point_group:
-                #     for point in _point_group:
-                #         device_uuid = device_uuid
-                #         point_object_type = ObjType.has_value_by_name(point_group)
-                #         point_name = point.get("point_name")
-                #         point_object_id = point.get("point_object_id")
-                #         body = {
-                #             "point_name": point_name,
-                #             "point_enable": True,
-                #             "point_object_id": point_object_id,
-                #             "point_object_type": point_object_type.name,
-                #             "device_uuid": device_uuid
-                #         }
-                #
-                #         requests.put(url,
-                #                      headers={'Content-Type': 'application/json'},
-                #                      json=body)
-
+            for idx, device in enumerate(devices):
+                _device = devices.get(device)
+                device_name = _device.get("device_name")
+                device_ip = _device.get("device_ip")
+                device_mask = _device.get("device_mask", 24)
+                device_port = _device.get("device_port", 47808)
+                device_mac = _device.get("device_mac")
+                device_object_id = _device.get("device_object_id")
+                network_number = _device.get("network_number")
+                type_mstp = _device.get("type_mstp")
+                network_uuid = net_uuid
+                body = {
+                    "device_name": device_name,
+                    "device_ip": device_ip,
+                    "device_mask": device_mask,
+                    "device_port": device_port,
+                    "device_mac": device_mac,
+                    "device_object_id": device_object_id,
+                    "network_number": network_number,
+                    "type_mstp": type_mstp,
+                    "network_uuid": network_uuid
+                }
+                print(8888)
+                print(body)
+                print(8888)
+                res = requests.put(url,
+                                   headers={'Content-Type': 'application/json'},
+                                   json=body)
+                print(res.text)
+                print(res.status_code)
         # return DeviceService().whois(net_uuid, whois=whois,
         #                              network_number=network_number,
         #                              global_broadcast=global_broadcast,

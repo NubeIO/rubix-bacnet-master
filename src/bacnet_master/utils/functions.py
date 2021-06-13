@@ -92,6 +92,7 @@ class BACnetFunctions:
         device_name = None
         vendor_name = None
         device_object_id = None
+        type_mstp = False
         if len(_list) == 2:
             try:
                 val = _list[0].split(':')
@@ -100,6 +101,8 @@ class BACnetFunctions:
                 else:
                     network_number = val[0]
                     device_mac = val[1]
+                    if device_mac >= 1:
+                        type_mstp = True
                 device_object_id = _list[1]
                 device_name = f"dev_{device_object_id}"
             except:
@@ -110,7 +113,8 @@ class BACnetFunctions:
                 "device_ip": device_ip,
                 "network_number": network_number,
                 "device_mac": device_mac,
-                "device_object_id": device_object_id
+                "device_object_id": device_object_id,
+                "type_mstp": type_mstp
             }
         elif len(_list) == 4:
             try:
@@ -120,6 +124,8 @@ class BACnetFunctions:
                 else:
                     network_number = val[0]
                     device_mac = val[1]
+                    if device_mac >= 1:
+                        type_mstp = True
                 device_object_id = _list[3]
                 device_name = _list[0]
             except:
@@ -130,5 +136,6 @@ class BACnetFunctions:
                 "device_ip": device_ip,
                 "network_number": network_number,
                 "device_mac": device_mac,
-                "device_object_id": device_object_id
+                "device_object_id": device_object_id,
+                "type_mstp": type_mstp
             }

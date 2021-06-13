@@ -350,6 +350,9 @@ class Device:
         if not network_instance:
             return {"network_instance": "network instance is none"}
         read = self._common_object(device)
+        print(1111)
+        print(read)
+        print(1111)
         try:
             if network_instance:
                 return network_instance.read(read)
@@ -386,19 +389,10 @@ class Device:
         try:
             if whois:
                 read = network_instance.whois(who, global_broadcast)
-                print(8888)
-                print(read)
-                print(88888)
                 _list = {}
                 for objects in read:
-                    print(7777)
-                    print(objects)
-                    print(77777)
                     each_device = BACnetFunctions.whois_split(objects)
                     dev = each_device.get('device_name')
-                    print(6767)
-                    print(each_device)
-                    print(6767)
                     _list.update({dev: each_device})
                 return _list
 

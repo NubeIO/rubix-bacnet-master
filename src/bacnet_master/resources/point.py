@@ -40,17 +40,19 @@ class AddPoint(PointBase):
     @classmethod
     @marshal_with(point_all_fields)
     def put(cls):
+        # TODO maybe need to add in check if point name alreay exists (The point name is used in the network poll points and throws an error if the name exists twice)
         point_uuid = Functions.make_uuid()
         data = Point.parser.parse_args()
-        get_name = data.get("point_name")
-        get_device_uuid = data.get("device_uuid")
-        point_name: BacnetPointModel = BacnetPointModel.find_by_point_name(get_name)
+        point_name = data.get("point_name")
+        point_object_id = data.get("point_object_id")
+        point_object_type = data.get("point_object_type")
+        check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(point_object_id, point_object_type)
+        if check_object_id:
+            raise NotFoundException(f"Point same Object Type and Object id exists id:{point_object_id}")
+        check_name: BacnetPointModel = BacnetPointModel.existing_object_name(point_name)
+        if check_name:
+            raise NotFoundException(f"Point name with that device exists {point_name}")
         point: BacnetPointModel = BacnetPointModel.find_by_point_uuid(point_uuid)
-        #TODO maybe need to add in check if point name alreay exists (The point name is used in the network poll points and throws an error if the name exists twice)
-        # if if point_name and point_name.device_uuid == get_device_uuid::
-        #     print("Point name with that device exists")
-        #     # raise NotFoundException("Point name with that device exists")
-
         if point is None:
             point = Point.create_model(point_uuid, data)
             point.save_to_db()
@@ -114,6 +116,16 @@ class PointList(PointBase):
         point = Point.create_model(point_uuid, data)
         point.save_to_db()
         return point
+
+
+class DeletePointList(PointBase):
+    @classmethod
+    def delete(cls, device_uuid):
+        point = BacnetPointModel.delete_all_points_by_device(device_uuid)
+        if point:
+            return '', 204
+        else:
+            return '', 404
 
 
 class PointBACnetRead(RubixResource):
