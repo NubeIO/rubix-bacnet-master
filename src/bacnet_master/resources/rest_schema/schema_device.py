@@ -19,10 +19,10 @@ device_all_attributes = {
         'required': False,
         'help': 'BACnet mstp device device_mac address'
     },
-    'device_id': {
+    'device_object_id': {
         'type': int,
         'required': True,
-        'help': 'Every device needs a bacnet device_id'
+        'help': 'Every device needs a bacnet device_object_id'
     },
     'device_ip': {
         'type': str,
@@ -68,7 +68,7 @@ device_all_attributes = {
 device_extra_attributes = {
     'device_uuid': {
         'type': str,
-        'required': True,
+        'required': False,
         'help': 'device_uuid must be a string'
     },
 }

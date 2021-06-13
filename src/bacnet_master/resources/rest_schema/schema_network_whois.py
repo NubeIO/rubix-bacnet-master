@@ -42,7 +42,7 @@ network_unknown_device_objects_attributes = {
         'type': int,
         'required': False,
         'help': 'BACnet mstp device device_mac address'
-    }, 'device_id': {
+    }, 'device_object_id': {
         'type': int,
         'required': True,
         'help': 'Every device needs a bacnet device id'
@@ -79,7 +79,7 @@ point_unknown_read_point_pv_attributes = {
         'type': int,
         'required': False,
         'help': 'BACnet mstp device device_mac address'
-    }, 'device_id': {
+    }, 'device_object_id': {
         'type': int,
         'required': True,
         'help': 'Every device needs a bacnet device id'
@@ -103,11 +103,11 @@ point_unknown_read_point_pv_attributes = {
         'type': int,
         'required': False,
         'help': 'Used for discovering networking (set to 0 to disable)'
-    }, 'point_obj_id': {
+    }, 'point_object_id': {
         'type': int,
         'required': True,
         'help': 'Every device needs a network device_uuid'
-    }, 'point_obj_type': {
+    }, 'point_object_type': {
         'type': str,
         'required': False,
         'help': 'True if device is type MSTP'

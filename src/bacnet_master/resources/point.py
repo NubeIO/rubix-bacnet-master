@@ -6,7 +6,8 @@ from src.bacnet_master.models.point import BacnetPointModel
 from src.bacnet_master.resources.rest_schema.schema_point import point_all_attributes, point_all_fields, \
     point_extra_attributes
 from src.bacnet_master.services.device import Device as DeviceService
-from src.bacnet_master.utils.functions import to_bool
+from src.bacnet_master.utils.functions import BACnetFunctions
+from src.utils.functions import Functions
 
 
 class PointBase(RubixResource):
@@ -27,6 +28,37 @@ class PointBase(RubixResource):
                                  store_missing=False)
 
 
+class AddPoint(PointBase):
+    parser_patch = reqparse.RequestParser()
+    for attr in point_all_attributes:
+        parser_patch.add_argument(attr,
+                                  type=point_all_attributes[attr]['type'],
+                                  required=False,
+                                  help=point_all_attributes[attr].get('help', None),
+                                  store_missing=False)
+
+    @classmethod
+    @marshal_with(point_all_fields)
+    def put(cls):
+        point_uuid = Functions.make_uuid()
+        data = Point.parser.parse_args()
+        get_name = data.get("point_name")
+        get_device_uuid = data.get("device_uuid")
+        point_name: BacnetPointModel = BacnetPointModel.find_by_point_name(get_name)
+        point: BacnetPointModel = BacnetPointModel.find_by_point_uuid(point_uuid)
+        #TODO maybe need to add in check if point name alreay exists (The point name is used in the network poll points and throws an error if the name exists twice)
+        # if if point_name and point_name.device_uuid == get_device_uuid::
+        #     print("Point name with that device exists")
+        #     # raise NotFoundException("Point name with that device exists")
+
+        if point is None:
+            point = Point.create_model(point_uuid, data)
+            point.save_to_db()
+        else:
+            point.update(**data)
+        return point
+
+
 class Point(PointBase):
     parser_patch = reqparse.RequestParser()
     for attr in point_all_attributes:
@@ -42,18 +74,6 @@ class Point(PointBase):
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
         if not point:
             raise NotFoundException('Point not found.')
-        return point
-
-    @classmethod
-    @marshal_with(point_all_fields)
-    def put(cls, point_uuid):
-        data = Point.parser.parse_args()
-        point: BacnetPointModel = BacnetPointModel.find_by_point_uuid(point_uuid)
-        if point is None:
-            point = Point.create_model(point_uuid, data)
-            point.save_to_db()
-        else:
-            point.update(**data)
         return point
 
     @classmethod
@@ -98,9 +118,9 @@ class PointList(PointBase):
 
 class PointBACnetRead(RubixResource):
     @classmethod
-    def get(cls, pnt_uuid, get_priority):
-        point = BacnetPointModel.find_by_point_uuid(pnt_uuid)
-        get_priority = to_bool(get_priority)
+    def get(cls, point_uuid, get_priority):
+        point = BacnetPointModel.find_by_point_uuid(point_uuid)
+        get_priority = Functions.to_bool(get_priority)
         if not point:
             raise NotFoundException('Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
@@ -122,13 +142,28 @@ class PointBACnetRead(RubixResource):
 
 class PointBACnetWrite(RubixResource):
     @classmethod
-    def post(cls, pnt_uuid, value, priority):
-        point = BacnetPointModel.find_by_point_uuid(pnt_uuid)
+    def post(cls, point_uuid, value, priority, feedback):
+        point = BacnetPointModel.find_by_point_uuid(point_uuid)
+        priority = int(priority)
+        feedback = Functions.to_bool(feedback)
         if not point:
-            raise NotFoundException('Points not found')
-        read = DeviceService.get_instance().write_point_pv(point, value, priority)
-        if read:
-            raise InternalServerErrorException('Error on point write')
+            raise NotFoundException('Point not found')
+        if not BACnetFunctions.check_priority(priority):
+            raise NotFoundException('priority must be between 1 and 16')
+        write = DeviceService.get_instance().write_point_pv(point, value, priority)
+        if isinstance(write, str):
+            raise InternalServerErrorException(f"Error on point write: {write}")
+        if feedback:
+            read = DeviceService.get_instance().get_point_pv(point)
+            priority = DeviceService.get_instance().get_point_priority(point)
+            if not isinstance(read, (int, float)):
+                raise BadDataException('release: False')
+            else:
+                return {
+                    "release": True,
+                    "value": read,
+                    "priority": priority
+                }
         return {
             "point_name": point.point_name,
             "point_value": value,
@@ -138,24 +173,28 @@ class PointBACnetWrite(RubixResource):
 
 class PointRelease(RubixResource):
     @classmethod
-    def post(cls, pnt_uuid, priority, feedback):
-        point = BacnetPointModel.find_by_point_uuid(pnt_uuid)
+    def post(cls, point_uuid, priority, feedback):
+        point = BacnetPointModel.find_by_point_uuid(point_uuid)
         value = 'null'
-        feedback = to_bool(feedback)
+        feedback = Functions.to_bool(feedback)
+        priority = int(priority)
         if not point:
             raise NotFoundException('Points not found')
+        if not BACnetFunctions.check_priority(priority):
+            raise NotFoundException('priority must be between 1 and 16')
         write = DeviceService.get_instance().write_point_pv(point, value, priority)
-        if write:
-            raise InternalServerErrorException('Error on point write')
+        if isinstance(write, str):
+            raise InternalServerErrorException(f"Error on point write: {write}")
         if feedback:
             read = DeviceService.get_instance().get_point_pv(point)
+            priority = DeviceService.get_instance().get_point_priority(point)
             if not isinstance(read, (int, float)):
                 raise BadDataException('release: False')
             else:
                 return {
                     "release": True,
                     "value": read,
-                    "priority": read
+                    "priority": priority
                 }
         else:
             return {"release": True}

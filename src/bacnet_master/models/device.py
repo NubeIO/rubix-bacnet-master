@@ -8,7 +8,7 @@ class BacnetDeviceModel(ModelBase):
     device_enable = db.Column(db.Boolean())
     device_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     device_mac = db.Column(db.Integer(), unique=False, nullable=False)
-    device_id = db.Column(db.Integer(), unique=False, nullable=False)
+    device_object_id = db.Column(db.Integer(), unique=False, nullable=False)
     device_ip = db.Column(db.String(80), unique=False, nullable=False)
     device_mask = db.Column(db.Integer(), nullable=False)
     device_port = db.Column(db.Integer(), nullable=False)

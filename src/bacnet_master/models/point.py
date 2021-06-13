@@ -8,8 +8,8 @@ class BacnetPointModel(ModelBase):
     point_name = db.Column(db.String(80), unique=False, nullable=False)
     point_enable = db.Column(db.Boolean())
     point_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
-    point_obj_id = db.Column(db.Integer(), unique=False, nullable=False)
-    point_obj_type = db.Column(db.Enum(ObjType), unique=False, nullable=False)
+    point_object_id = db.Column(db.Integer(), unique=False, nullable=False)
+    point_object_type = db.Column(db.Enum(ObjType), unique=False, nullable=False)
     device_uuid = db.Column(db.String, db.ForeignKey('bacnet_devices.device_uuid'))
 
     def __repr__(self):
@@ -18,3 +18,7 @@ class BacnetPointModel(ModelBase):
     @classmethod
     def find_by_point_uuid(cls, point_uuid):
         return cls.query.filter_by(point_uuid=point_uuid).first()
+
+    @classmethod
+    def find_by_point_name(cls, point_name):
+        return cls.query.filter_by(point_name=point_name).first()

@@ -29,10 +29,10 @@ network_all_attributes = {
         'required': True,
         'help': 'network_port must must be an int length 4'
     },
-    'network_device_id': {
+    'network_device_object_id': {
         'type': int,
         'required': True,
-        'help': 'network_device_id is needed'
+        'help': 'network device object id is needed'
     },
     'network_device_name': {
         'type': str,
@@ -44,7 +44,7 @@ network_all_attributes = {
 network_extra_attributes = {
     'network_uuid': {
         'type': str,
-        'required': True,
+        'required': False,
         'help': 'network_uuid must be a string'
     },
 }

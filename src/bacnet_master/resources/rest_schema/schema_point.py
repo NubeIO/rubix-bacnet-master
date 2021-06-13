@@ -11,17 +11,17 @@ point_all_attributes = {
         'required': False,
         'help': 'enable/disable operation'
     },
-    'point_obj_id': {
+    'point_object_id': {
         'type': int,
         'required': True,
-        'help': 'point_obj_id must be a int'
+        'help': 'point_object_id must be a int'
     },
-    'point_obj_type': {
+    'point_object_type': {
         'type': str,
         'required': False,
         'nested': True,
-        'dict': 'point_obj_type.name',
-        'help': 'point_obj_type must be a string'
+        'dict': 'point_object_type.name',
+        'help': 'point_object_type must be a string'
     },
     'device_uuid': {
         'type': str,
@@ -33,7 +33,7 @@ point_all_attributes = {
 point_extra_attributes = {
     'point_uuid': {
         'type': str,
-        'required': True,
+        'required': False,
         'help': 'point_uuid must be a string'
     },
 }
