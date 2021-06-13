@@ -59,7 +59,7 @@ class Device:
         object_instance = kwargs.get('object_instance') or device.device_object_id
         network_number = kwargs.get('network_number') or device.network_number
         network_number = BACnetFunctions.network_number(network_number)
-        object_type = kwargs.get('object_type') or ObjType.DEVICE._name
+        object_type = kwargs.get('object_type') or ObjType.device.get_name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
@@ -76,7 +76,7 @@ class Device:
         object_instance = kwargs.get('object_instance') or device.get("device_object_id")
         network_number = device.get("network_number")
         network_number = BACnetFunctions.network_number(network_number)
-        object_type = kwargs.get('object_type') or ObjType.DEVICE._name
+        object_type = kwargs.get('object_type') or ObjType.device.get_name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
         logger.info(f"GET DEVICE OBJECT LIST  dev_url:{dev_url}, type_mstp:{type_mstp}, "
                     f"device_mac:{device_mac}, device_object_id:{object_instance}, "
@@ -110,12 +110,15 @@ class Device:
         if network_instance:
             try:
                 value = network_instance.read(read)
+                logger.info(f"DO POINT READ: {read}: return value:{value}")
                 return value
             except UnknownObjectError as e:
                 logger.error(f"{point.point_object_type.name}:{point.point_object_id} is unknown: {e}")
-                return {f"{point.point_object_type.name}:{point.point_object_id} is unknown"}
+                return f"{point.point_object_type.name}:{point.point_object_id} is unknown"
             except Exception as e:
                 logger.error(f"{read} read present value error: {e}")
+                return f"{point.point_object_type.name}:{point.point_object_id} is unknown: {e}"
+
 
     def get_point_priority(self, point):
         device = BacnetDeviceModel.find_by_device_uuid(point.device_uuid)
@@ -151,7 +154,7 @@ class Device:
         point_object = point.point_object_type
         if value != 'null':
             value = float(value)
-        if point_object == ObjType.BINARY_OUTPUT or point_object == ObjType.BINARY_VALUE:
+        if point_object == ObjType.binaryOutput or point_object == ObjType.binaryValue:
             if value >= 1:
                 value = "active"
             elif value < 1:

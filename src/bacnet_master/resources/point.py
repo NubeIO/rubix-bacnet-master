@@ -129,37 +129,58 @@ class DeletePointList(PointBase):
 
 
 class PointBACnetRead(RubixResource):
+
     @classmethod
-    def get(cls, point_uuid, get_priority):
+    @marshal_with(point_all_fields)
+    def post(cls, point_uuid):
+        data = Point.post_parser.parse_args()
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
+        get_priority = data.get('get_priority')
         get_priority = Functions.to_bool(get_priority)
+        timeout = data.get('timeout')
+        if timeout:
+            timeout = Functions.to_int(timeout)
+            if not isinstance(timeout, str):
+                raise InternalServerErrorException(f"Error: {timeout}")
         if not point:
             raise NotFoundException('Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
+        print(2222)
+        print(read)
+        print(read)
         if not isinstance(read, (int, float)):
             raise InternalServerErrorException(f"Error: {read}")
         if get_priority:
             priority = DeviceService.get_instance().get_point_priority(point)
             return {
                 "point_name": point.point_name,
+                "point_object_id": point.point_object_id,
+                "point_object_type": point.point_object_type,
+                "point_uuid": point_uuid,
                 "point_value": read,
                 "priority": priority
             }
         else:
             return {
                 "point_name": point.point_name,
+                "point_object_id": point.point_object_id,
+                "point_object_type": point.point_object_type,
+                "point_uuid": point_uuid,
                 "point_value": read
             }
 
 
 class PointBACnetWrite(RubixResource):
     @classmethod
-    def post(cls, point_uuid, value, priority, feedback):
+    def post(cls, point_uuid, value, priority, feedback, timeout):
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
         priority = int(priority)
         feedback = Functions.to_bool(feedback)
+        timeout = Functions.to_int(timeout)
+        if isinstance(timeout, str):
+            raise InternalServerErrorException(f"Error: timeout must be an int in (seconds) {timeout}")
         if not point:
-            raise NotFoundException('Point not found')
+            raise NotFoundException(f"Point {point_uuid} not found")
         if not BACnetFunctions.check_priority(priority):
             raise NotFoundException('priority must be between 1 and 16')
         write = DeviceService.get_instance().write_point_pv(point, value, priority)

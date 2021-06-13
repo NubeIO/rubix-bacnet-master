@@ -34,18 +34,16 @@ class Whois(NetworkWhois):
         full_range = data['full_range']
         range_start = data['range_start']
         range_end = data['range_end']
-
         devices = DeviceService().whois(net_uuid, whois=whois,
                                         network_number=network_number,
                                         global_broadcast=global_broadcast,
                                         full_range=full_range,
                                         range_start=range_start,
                                         range_end=range_end)
+        if not add_devices:
+            return devices
 
-        print(3333)
-        print(devices)
-        print(3333)
-        if add_devices:
+        elif add_devices:
             host = '0.0.0.0'
             port = '1718'
             url = f"http://{host}:{port}/api/bm/device"
@@ -71,14 +69,12 @@ class Whois(NetworkWhois):
                     "type_mstp": type_mstp,
                     "network_uuid": network_uuid
                 }
-                print(8888)
-                print(body)
-                print(8888)
                 res = requests.put(url,
                                    headers={'Content-Type': 'application/json'},
                                    json=body)
                 print(res.text)
                 print(res.status_code)
+        return devices
         # return DeviceService().whois(net_uuid, whois=whois,
         #                              network_number=network_number,
         #                              global_broadcast=global_broadcast,

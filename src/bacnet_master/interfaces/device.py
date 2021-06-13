@@ -2,32 +2,32 @@ from enum import Enum
 
 
 class ObjType(Enum):
-    ANALOG_INPUT = "analog_input", 0, 'analogInput'
-    ANALOG_OUTPUT = "analog_output", 1, 'analogOutput'
-    ANALOG_VALUE = "analog_value", 2, 'analogValue'
-    BINARY_INPUT = "binary_input", 3, 'binaryInput'
-    BINARY_OUTPUT = "binary_output", 4, 'binaryOutput'
-    BINARY_VALUE = "binary_value", 5, 'binaryValue'
-    CALENDAR = "calendar", 6, 'calendar'
-    COMMAND = "command", 7, 'command'
-    DEVICE = "device", 8, 'device'
-    EVENT_ENROLLMENT = "event_enrollment", 9, 'eventEnrollment'
-    FILE = "file", 10, 'file'
-    GROUP = "group", 11, 'group'
-    LOOP = "loop", 12, 'loop'
-    MULTI_STATE_INPUT = "multi_state_input", 13, 'multiStateInput'
-    MULTI_STATE_OUTPUT = "multi_state_output", 14, 'multiStateOutput'
-    NOTIFICATION_CLASS = "notification_class", 15, 'notificationClass'
-    PROGRAM = "program", 16, 'program'
-    SCHEDULE = "schedule", 17, 'schedule'
-    AVERAGING = "averaging", 18, 'averaging'
-    MULTI_STATE_VALUE = "multi_state_value", 19, 'multiStateValue'
-    TREND_LOG = "trend_log", 20, 'trendLog'
-    LIFE_SAFETY_POINT = "life_safety_point", 21, 'lifeSafetyPoint'
-    LIFE_SAFETY_ZONE = "life_safety_zone", 22, 'lifeSafetyZone'
-    ACCUMULATOR = "accumulator", 23, 'accumulator'
-    PULSE_CONVERTER = "pulse_converter", 24, 'pulseConverter'
-    ACCESS_POINT = "access_point", 33, 'accessPoint'
+    analogInput = "analog_input", 0, 'analogInput'
+    analogOutput = "analog_output", 1, 'analogOutput'
+    analogValue = "analog_value", 2, 'analogValue'
+    binaryInput = "binary_input", 3, 'binaryInput'
+    binaryOutput = "binary_output", 4, 'binaryOutput'
+    binaryValue = "binary_value", 5, 'binaryValue'
+    calendar = "calendar", 6, 'calendar'
+    command = "command", 7, 'command'
+    device = "device", 8, 'device'
+    eventEnrollment = "event_enrollment", 9, 'eventEnrollment'
+    file = "file", 10, 'file'
+    group = "group", 11, 'group'
+    loop = "loop", 12, 'loop'
+    multiStateInput = "multi_state_input", 13, 'multiStateInput'
+    multiStateOutput = "multi_state_output", 14, 'multiStateOutput'
+    notificationClass = "notification_class", 15, 'notificationClass'
+    program = "program", 16, 'program'
+    schedule = "schedule", 17, 'schedule'
+    averaging = "averaging", 18, 'averaging'
+    multiStateValue = "multi_state_value", 19, 'multiStateValue'
+    trendLog = "trend_log", 20, 'trendLog'
+    lifeSafetyPoint = "life_safety_point", 21, 'lifeSafetyPoint'
+    lifeSafetyZone = "life_safety_zone", 22, 'lifeSafetyZone'
+    accumulator = "accumulator", 23, 'accumulator'
+    pulseConverter = "pulse_converter", 24, 'pulseConverter'
+    accessPoint = "access_point", 33, 'accessPoint'
 
     @classmethod
     def has_value(cls, value):
@@ -55,11 +55,11 @@ class ObjType(Enum):
         return self.value[1]
 
     @property
-    def _name(self) -> str:
+    def get_name(self) -> str:
         return self.value[2]
 
     @property
-    def _name_underscore(self) -> str:
+    def name_underscore(self) -> str:
         return self.value[0]
 
     @classmethod
@@ -80,4 +80,3 @@ class ObjType(Enum):
             d[i.value[2]] = False
         return d
 
-print(ObjType.has_value_from_string("ANALOG_OUTPUT").get("name"))

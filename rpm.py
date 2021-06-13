@@ -78,7 +78,7 @@ def read_property(network, address, obj: BACnetObject, prop: ObjProperty):
 
 a = BACnetObject
 a.name = "aa"
-a.type = ObjType.DEVICE
+a.type = ObjType.device
 a.id = 123
 prop = ObjProperty.objectName
 prop2 = ObjProperty.objectName

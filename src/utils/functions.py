@@ -5,6 +5,15 @@ import ipaddress
 class Functions:
 
     @staticmethod
+    def to_int(s):
+        try:
+            s = float(s)
+            s = int(float(s))
+            return s
+        except ValueError as e:
+            return e
+
+    @staticmethod
     def to_bool(value):
         if value == True:
             return True
@@ -64,6 +73,3 @@ class Functions:
 #     if value == "0.0.0.0":
 #         raise ValueError("IP 0.0.0.0 doesn't not support")
 #     return value
-
-
-

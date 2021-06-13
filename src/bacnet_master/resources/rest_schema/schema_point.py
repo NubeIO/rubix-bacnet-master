@@ -13,7 +13,7 @@ point_all_attributes = {
     },
     'point_object_id': {
         'type': int,
-        'required': True,
+        'required': False,
         'help': 'point_object_id must be a int'
     },
     'point_object_type': {
@@ -25,6 +25,21 @@ point_all_attributes = {
     },
     'device_uuid': {
         'type': str,
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'get_priority': {
+        'type': bool,
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'timeout': {
+        'type': int,
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'point_value': {
+        'type': int,
         'required': False,
         'help': 'point_name must be a string'
     }

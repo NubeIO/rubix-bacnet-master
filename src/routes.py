@@ -31,9 +31,9 @@ api_bacnet_master.add_resource(PointList, '/points')
 
 # bacnet network calls
 api_bacnet_master.add_resource(Whois, '/b/network/whois/<string:net_uuid>/<string:add_devices>')
-api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:point_uuid>/<string:get_priority>')  # read point pv
+api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:point_uuid>')  # read point pv
 api_bacnet_master.add_resource(PointBACnetWrite,
-                               '/b/points/write/pv/<string:point_uuid>/<string:value>/<string:priority>/<string:feedback>')  # write point pv
+                               '/b/points/write/pv/<string:point_uuid>/<string:value>/<string:priority>/<string:feedback>/<string:timeout>')  # write point pv
 api_bacnet_master.add_resource(PointRelease,
                                '/b/points/write/release/<string:point_uuid>/<string:priority>/<string:feedback>')  # release point pv
 
