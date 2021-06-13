@@ -10,7 +10,7 @@ class BacnetNetworkModel(ModelBase):
     network_ip = db.Column(db.String(20), unique=False, nullable=False)
     network_mask = db.Column(db.Integer(), nullable=False)
     network_port = db.Column(db.Integer(), nullable=False)
-    network_device_id = db.Column(db.Integer(), nullable=False)
+    network_device_object_id = db.Column(db.Integer(), nullable=False)
     network_device_name = db.Column(db.String(80), nullable=False)
     devices = db.relationship('BacnetDeviceModel', cascade="all,delete", backref='network', lazy=True)
 

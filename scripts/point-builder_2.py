@@ -1,7 +1,7 @@
 import json
 import requests
 
-host = '123.209.253.77'
+host = '192.168.15.101'
 port = '1616'
 payload = {"username": "admin", "password": "N00BWires"}
 get_token = requests.post(f"http://{host}:{port}/api/users/login", json=payload)

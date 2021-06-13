@@ -8,6 +8,7 @@ from src.bacnet_master.models.network import BacnetNetworkModel
 from src.bacnet_master.resources.rest_schema.schema_network import network_all_attributes, network_all_fields, \
     network_extra_attributes
 from src.bacnet_master.services.network import Network as NetworkService
+from src.utils.functions import Functions
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,30 @@ class NetworkBase(RubixResource):
                                  store_missing=False)
 
 
+class AddNetwork(NetworkBase):
+    parser_patch = reqparse.RequestParser()
+    for attr in network_all_attributes:
+        parser_patch.add_argument(attr,
+                                  type=network_all_attributes[attr]['type'],
+                                  required=False,
+                                  help=network_all_attributes[attr].get('help', None),
+                                  store_missing=False)
+
+    @classmethod
+    @marshal_with(network_all_fields)
+    def put(cls):
+        network_uuid = Functions.make_uuid()
+        data = Network.parser.parse_args()
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if network is None:
+            network = Network.create_network_model_obj(network_uuid, data)
+            network.save_to_db()
+        else:
+            network.update(**data)
+        NetworkService.get_instance().add_network(network)
+        return network
+
+
 class Network(NetworkBase):
     parser_patch = reqparse.RequestParser()
     for attr in network_all_attributes:
@@ -48,18 +73,7 @@ class Network(NetworkBase):
             raise NotFoundException("Network not found")
         return network
 
-    @classmethod
-    @marshal_with(network_all_fields)
-    def put(cls, network_uuid):
-        data = Network.parser.parse_args()
-        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
-        if network is None:
-            network = Network.create_network_model_obj(network_uuid, data)
-            network.save_to_db()
-        else:
-            network.update(**data)
-        NetworkService.get_instance().add_network(network)
-        return network
+
 
     @classmethod
     @marshal_with(network_all_fields)
