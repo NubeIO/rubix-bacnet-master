@@ -46,7 +46,7 @@ class ObjType(Enum):
         if value in cls.__members__:
             return {
                 "value": ObjType[value],
-                "name": ObjType[value]._name,
+                "name": ObjType[value].get_name,
                 "id": ObjType[value].id
             }
 
@@ -79,4 +79,3 @@ class ObjType(Enum):
         for i in ObjType:
             d[i.value[2]] = False
         return d
-

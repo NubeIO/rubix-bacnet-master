@@ -4,7 +4,25 @@ from src.utils.functions import Functions
 class BACnetFunctions:
 
     @staticmethod
-    def network_number(network_number):
+    def bacnet_mac_address(mac_address: int) -> bool:
+        """
+        check if mac address is between 0 to 254
+        :param mac_address:
+        :return:
+        """
+        return mac_address in range(0, 255)
+
+    @staticmethod
+    def validate_network_number(network_number: int) -> bool:
+        """
+        check if network number is between 0 and 65534
+        :param network_number:
+        :return:
+        """
+        return network_number in range(0, 65534)
+
+    @staticmethod
+    def network_number(network_number: int) -> int:
         min_range = 0
         max_range = 65534
         if network_number == 0:
@@ -114,7 +132,9 @@ class BACnetFunctions:
                 "network_number": network_number,
                 "device_mac": device_mac,
                 "device_object_id": device_object_id,
-                "type_mstp": type_mstp
+                "type_mstp": type_mstp,
+                "supports_rpm": False,
+                "supports_wpm": False
             }
         elif len(_list) == 4:
             try:
@@ -137,5 +157,7 @@ class BACnetFunctions:
                 "network_number": network_number,
                 "device_mac": device_mac,
                 "device_object_id": device_object_id,
-                "type_mstp": type_mstp
+                "type_mstp": type_mstp,
+                "supports_rpm": False,
+                "supports_wpm": False
             }

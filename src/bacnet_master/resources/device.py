@@ -6,6 +6,7 @@ from rubix_http.resource import RubixResource
 
 from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.models.device import BacnetDeviceModel
+from src.bacnet_master.models.network import BacnetNetworkModel
 from src.bacnet_master.resources.rest_schema.schema_device import device_all_attributes, device_all_fields, \
     device_extra_attributes
 from src.bacnet_master.services.device import Device as DeviceService
@@ -47,6 +48,21 @@ class AddDevice(DeviceBase):
     def put(cls):
         device_uuid = Functions.make_uuid()
         data = Device.parser.parse_args()
+        network_uuid = data.get("network_uuid")
+        device_mac = data.get("device_mac")
+        type_mstp = data.get("type_mstp")
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not network:
+            raise NotFoundException("Network not found")
+        network_number = data.get("network_number")
+        device_object_id = data.get("device_object_id")
+        check_object_id: BacnetDeviceModel = BacnetDeviceModel.existing_device_id_to_net(network_number, device_object_id)
+        if check_object_id:
+            raise NotFoundException(f"Device same Object ID:{device_object_id} and Network Number:{network_number} already exists")
+        check_mac_address: BacnetDeviceModel = BacnetDeviceModel.existing_net_to_mac(network_number, device_mac)
+        if type_mstp:
+            if check_mac_address:
+                raise NotFoundException(f"Device same mac address:{device_mac} and Network Number:{network_number} already exists")
         device: BacnetDeviceModel = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if device is None:
             device = Device.create_device_model_obj(device_uuid, data)
@@ -98,9 +114,13 @@ class Device(DeviceBase):
     @classmethod
     def delete(cls, device_uuid):
         device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
+        if device is None:
+            raise NotFoundException("Device not found")
         if device:
             device.delete_from_db()
-        return '', 204
+            return {"message": f"pass"}, 204
+        else:
+            return {"message": "failed to delete"}, 404
 
     @staticmethod
     def create_device_model_obj(device_uuid, data):
@@ -110,11 +130,14 @@ class Device(DeviceBase):
 class DeleteDevices(DeviceBase):
     @classmethod
     def delete(cls, network_uuid):
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not network:
+            raise NotFoundException("Network not found")
         device = BacnetDeviceModel.delete_all_device_by_network(network_uuid)
         if device:
-            return '', 204
+            return 'pass', 204
         else:
-            return '', 404
+            return 'fail', 404
 
 
 class DeviceList(DeviceBase):
@@ -198,9 +221,12 @@ class DiscoverPoints(RubixResource):
 class GetAllPoints(RubixResource):
     @classmethod
     def get(cls, network_uuid, timeout):
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not network:
+            raise NotFoundException("Network not found")
         host = '0.0.0.0'
         port = '1718'
         url = f"http://{host}:{port}/api/bm/network/{network_uuid}"
-        network = requests.get(url).json()
-        data = DeviceService.get_instance().read_point_list_by_network(network, network_uuid, int(timeout))
+        get_network = requests.get(url).json()
+        data = DeviceService.get_instance().read_point_list_by_network(get_network, network_uuid, int(timeout))
         return data

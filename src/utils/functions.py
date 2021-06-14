@@ -14,6 +14,14 @@ class Functions:
             return e
 
     @staticmethod
+    def to_float(s):
+        try:
+            s = float(s)
+            return s
+        except ValueError as e:
+            return e
+
+    @staticmethod
     def to_bool(value):
         if value == True:
             return True
@@ -36,6 +44,15 @@ class Functions:
             return False
         except:
             return False
+
+    @staticmethod
+    def cidr_is_in_range(cidr: int) -> str or bool:
+        """
+        check that netmask/subnet s between 1 and 32 eg: /24
+        :param cidr:
+        :return:
+        """
+        return cidr in range(0, 33)
 
     @staticmethod
     def cidr_to_netmask(cidr: int) -> str or bool:

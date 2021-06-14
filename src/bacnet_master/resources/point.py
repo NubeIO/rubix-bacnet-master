@@ -145,9 +145,6 @@ class PointBACnetRead(RubixResource):
         if not point:
             raise NotFoundException('Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
-        print(2222)
-        print(read)
-        print(read)
         if not isinstance(read, (int, float)):
             raise InternalServerErrorException(f"Error: {read}")
         if get_priority:
@@ -172,35 +169,53 @@ class PointBACnetRead(RubixResource):
 
 class PointBACnetWrite(RubixResource):
     @classmethod
-    def post(cls, point_uuid, value, priority, feedback, timeout):
+    @marshal_with(point_all_fields)
+    def post(cls, point_uuid):
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
+        data = Point.post_parser.parse_args()
+        point_write_value = data.get('point_write_value')
+        point_write_value = Functions.to_float(point_write_value)
+        priority = data.get('priority')
         priority = int(priority)
-        feedback = Functions.to_bool(feedback)
-        timeout = Functions.to_int(timeout)
-        if isinstance(timeout, str):
-            raise InternalServerErrorException(f"Error: timeout must be an int in (seconds) {timeout}")
+        feedback = data.get('feedback')
+        timeout = data.get('timeout')
+
+        # feedback = Functions.to_bool(feedback)
+        if not isinstance(point_write_value, (int, float)):
+            raise InternalServerErrorException(f"Error on point write: value must be a number {point_write_value}")
+        if timeout:
+            timeout = Functions.to_int(timeout)
+            if not isinstance(timeout, int):
+                raise InternalServerErrorException(f"Error: timeout must be an int {timeout}")
         if not point:
             raise NotFoundException(f"Point {point_uuid} not found")
         if not BACnetFunctions.check_priority(priority):
             raise NotFoundException('priority must be between 1 and 16')
-        write = DeviceService.get_instance().write_point_pv(point, value, priority)
+        write = DeviceService.get_instance().write_point_pv(point, point_write_value, priority)
         if isinstance(write, str):
             raise InternalServerErrorException(f"Error on point write: {write}")
         if feedback:
             read = DeviceService.get_instance().get_point_pv(point)
-            priority = DeviceService.get_instance().get_point_priority(point)
+            _priority = DeviceService.get_instance().get_point_priority(point)
             if not isinstance(read, (int, float)):
                 raise BadDataException('release: False')
             else:
                 return {
-                    "release": True,
-                    "value": read,
-                    "priority": priority
+                    "point_value": read,
+                    "point_name": point.point_name,
+                    "point_object_id": point.point_object_id,
+                    "point_object_type": point.point_object_type,
+                    "point_uuid": point_uuid,
+                    "priority_array": _priority,
+
                 }
         return {
+            "point_value": point_write_value,
             "point_name": point.point_name,
-            "point_value": value,
-            "priority": priority
+            "point_object_id": point.point_object_id,
+            "point_object_type": point.point_object_type,
+            "point_uuid": point_uuid,
+            "priority_array": {},
         }
 
 

@@ -1,7 +1,7 @@
 import logging
 
 from flask_restful import reqparse, fields, marshal_with
-from rubix_http.exceptions.exception import NotFoundException, BadDataException
+from rubix_http.exceptions.exception import NotFoundException, BadDataException, InternalServerErrorException
 from rubix_http.resource import RubixResource
 
 from src.bacnet_master.models.network import BacnetNetworkModel

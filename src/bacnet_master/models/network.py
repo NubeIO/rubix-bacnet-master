@@ -1,5 +1,9 @@
+from sqlalchemy.orm import validates
+
 from src import db
 from src.bacnet_master.models.model_base import ModelBase
+from src.bacnet_master.utils.functions import BACnetFunctions
+from src.utils.functions import Functions
 
 
 class BacnetNetworkModel(ModelBase):
@@ -20,3 +24,35 @@ class BacnetNetworkModel(ModelBase):
     @classmethod
     def find_by_network_uuid(cls, network_uuid):
         return cls.query.filter_by(network_uuid=network_uuid).first()
+
+    @validates('device_ip')
+    def validate_ip(self, _, value):
+        """
+        """
+        if not Functions.is_valid_ip(value):
+            raise ValueError(f"IP Address: {value} is not not valid")
+        return value
+
+    @validates('device_mask')
+    def validate_mask(self, _, value):
+        """
+        """
+        if not Functions.cidr_is_in_range(value):
+            raise ValueError(f"Subnet Address: {value} is not not valid, a valid rang is between 0 and 32")
+        return value
+
+    @validates('network_port')
+    def validate_network_port(self, _, value):
+        """
+        """
+        if not BACnetFunctions.validate_network_number(value):
+            raise ValueError(f"Device port number: {value} is not not valid, a valid rang is between 0 and 65534")
+        return value
+
+    @validates('network_number')
+    def validate_network_number(self, _, value):
+        """
+        """
+        if not BACnetFunctions.validate_network_number(value):
+            raise ValueError(f"BACnet network number: {value} is not not valid, a valid rang is between 0 and 65534")
+        return value

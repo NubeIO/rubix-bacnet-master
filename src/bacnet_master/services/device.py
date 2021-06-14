@@ -119,7 +119,6 @@ class Device:
                 logger.error(f"{read} read present value error: {e}")
                 return f"{point.point_object_type.name}:{point.point_object_id} is unknown: {e}"
 
-
     def get_point_priority(self, point):
         device = BacnetDeviceModel.find_by_device_uuid(point.device_uuid)
         if not device:
@@ -193,13 +192,11 @@ class Device:
         if not net:
             return {"net": "net is none"}
         network_instance = self._get_network_from_network(net)
-        print(1111)
         if not network_instance:
             return {"network_instance": "network instance is none"}
         props = [ObjProperty.objectName.name, ObjProperty.presentValue.name]
         _list = {}
         build_points_list = {}
-        print(2222)
         for device in network.get("devices"):
             network_uuid = device["network_uuid"]
             device_name = device["device_name"]
@@ -224,10 +221,10 @@ class Device:
             _rpm = {'address': device_ip,
                     'objects': _list
                     }
-            print(_rpm)
-            bacnet_return = network_instance.readMultiple(device_ip, _rpm, timeout=timeout)
-            print(22222222)
-            print(bacnet_return)
+            objects_dict = _rpm.get("objects")
+            bacnet_return = ['']
+            if objects_dict:
+                bacnet_return = network_instance.readMultiple(device_ip, _rpm, timeout=timeout)
             if bacnet_return != ['']:
                 count = 0
                 for _point in list(bacnet_return):
@@ -362,8 +359,8 @@ class Device:
         except:
             return {}
 
-    def whois(self, net_uuid, **kwargs):
-        net = BacnetNetworkModel.find_by_network_uuid(net_uuid)
+    def whois(self, network_uuid, **kwargs):
+        net = BacnetNetworkModel.find_by_network_uuid(network_uuid)
         if not net:
             return {"net": "net is none"}
         network_instance = self._get_network_from_network(net)
@@ -387,7 +384,7 @@ class Device:
         whois = kwargs.get('whois', True)
         global_broadcast = kwargs.get('global_broadcast', False)
         who = BACnetFunctions.common_whois(range_start=range_start, range_end=range_end, network_number=network_number)
-        logger.info(f"WHOIS network_id:{net_uuid} whois -> {whois} who {who}, global_broadcast:{global_broadcast} "
+        logger.info(f"WHOIS network_id:{network_uuid} whois -> {whois} who {who}, global_broadcast:{global_broadcast} "
                     f", network_number:{network_number}, range_start:{range_start}, range_end:{range_end}")
         try:
             if whois:
@@ -402,23 +399,25 @@ class Device:
             else:
                 if network_number == 0:
                     logger.info(
-                        f"WHOIS network_id:{net_uuid} discover -> range:{range_start},{range_end} , global_broadcast: {global_broadcast}")
+                        f"WHOIS network_id:{network_uuid} discover -> range:{range_start},{range_end} , global_broadcast: {global_broadcast}")
                     network_instance.discover(limits=(range_start, range_end), global_broadcast=global_broadcast)
                     _list = {}
                     for objects in network_instance.devices:
                         each_device = BACnetFunctions.whois_split(objects)
-                        _list.update(each_device)
+                        dev = each_device.get('device_name')
+                        _list.update({dev: each_device})
                     return _list
                 else:
                     logger.info(
-                        f"WHOIS network_id:{net_uuid} discover -> network_number:{network_number} "
+                        f"WHOIS network_id:{network_uuid} discover -> network_number:{network_number} "
                         f"range:{range_start},{range_end}, global_broadcast:{global_broadcast}")
                     network_instance.discover(networks=[network_number], limits=(range_start, range_end),
                                               global_broadcast=global_broadcast)
                     _list = {}
                     for objects in network_instance.devices:
                         each_device = BACnetFunctions.whois_split(objects)
-                        _list.update(each_device)
+                        dev = each_device.get('device_name')
+                        _list.update({dev: each_device})
                     return _list
         except:
             return {}

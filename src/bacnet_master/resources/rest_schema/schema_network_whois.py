@@ -30,6 +30,11 @@ network_whois_all_attributes = {
         'type': int,
         'required': False,
         'help': 'WhoIs looking for devices in the ID range (10 - 1000) EXAMPLE: END 1000'
+    },
+    'add_devices': {
+        'type': bool,
+        'required': False,
+        'help': 'Set to true if you wanna add all discovered devices'
     }
 }
 

@@ -1,5 +1,24 @@
+from flask_restful import fields
+from collections import OrderedDict
 from src.bacnet_master.resources.utils import map_rest_schema
-
+priority_array_write_fields = OrderedDict({
+    '_1': fields.Float,
+    '_2': fields.Float,
+    '_3': fields.Float,
+    '_4': fields.Float,
+    '_5': fields.Float,
+    '_6': fields.Float,
+    '_7': fields.Float,
+    '_8': fields.Float,
+    '_9': fields.Float,
+    '_10': fields.Float,
+    '_11': fields.Float,
+    '_12': fields.Float,
+    '_13': fields.Float,
+    '_14': fields.Float,
+    '_15': fields.Float,
+    '_16': fields.Float,
+})
 point_all_attributes = {
     'point_name': {
         'type': str,
@@ -38,8 +57,28 @@ point_all_attributes = {
         'required': False,
         'help': 'point_name must be a string'
     },
-    'point_value': {
+    'feedback': {
+        'type': bool,
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'priority': {
         'type': int,
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'point_value': {
+        'type': float,
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'priority_array': {
+        'type':  fields.Nested(priority_array_write_fields),
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'point_write_value': {
+        'type': float,
         'required': False,
         'help': 'point_name must be a string'
     }
