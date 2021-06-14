@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rubix-bacnet-master"
-version = "0.0.4"
+version = "0.0.5"
 description = ""
 authors = ["NubeDev <aidan@envrioservices.com.au>"]
 
