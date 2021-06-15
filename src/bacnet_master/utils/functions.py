@@ -168,7 +168,11 @@ class BACnetFunctions:
 
             if res.status_code == 200:
                 count = count + 1
-                dev = {device_name: body}
+                uuid = res.json().get("device_uuid")
+                name = f"{device_name}_{uuid}"
+                body.update({"device_uuid": uuid})
+                dev = {name: body}
+
                 added_devices.update(dev)
             else:
                 dev = {device_name: body}
@@ -195,9 +199,27 @@ class BACnetFunctions:
         host = '0.0.0.0'
         port = '1718'
         url = f"http://{host}:{port}/api/bm/point"
-        added_points = {}
-        existing_or_failed_points = {}
+
         count = 0
+        added_analog_inputs = []
+        added_analog_outputs = []
+        added_analog_values = []
+        added_binary_input = []
+        added_binary_output = []
+        added_binary_value = []
+        added_multi_state_input = []
+        added_multi_state_output = []
+        added_multi_state_value = []
+        failed_analog_inputs = []
+        failed_analog_outputs = []
+        failed_analog_values = []
+        failed_binary_input = []
+        failed_binary_output = []
+        failed_binary_value = []
+        failed_multi_state_input = []
+        failed_multi_state_output = []
+        failed_multi_state_value = []
+
         for point_group in points.get("points"):
             _point_group = points.get("points")
             _point_group = _point_group.get(point_group)
@@ -217,19 +239,84 @@ class BACnetFunctions:
                     res = requests.put(url,
                                        headers={'Content-Type': 'application/json'},
                                        json=body)
-                    if res.status_code == 200:
-                        count = count + 1
-                        dev = {point_name: body}
-                        added_points.update(dev)
-                    else:
-                        dev = {point_name: body}
-                        existing_or_failed_points.update(dev)
-        return {
-            "added_points_count": count,
-            "added_points": added_points,
-            "existing_or_failed_points": existing_or_failed_points
-        }
 
+                    count = count + 1
+                    if point_object_type.name == ObjType.analogInput.name:
+                        if res.status_code == 200:
+                            added_analog_inputs.append(body)
+                        else:
+                            failed_analog_inputs.append(body)
+                    elif point_object_type.name == ObjType.analogOutput.name:
+                        if res.status_code == 200:
+                            added_analog_outputs.append(body)
+                        else:
+                            failed_analog_outputs.append(body)
+                    elif point_object_type.name == ObjType.analogValue.name:
+                        if res.status_code == 200:
+                            added_analog_values.append(body)
+                        else:
+                            failed_analog_values.append(body)
+                    elif point_object_type.name == ObjType.binaryInput.name:
+                        if res.status_code == 200:
+                            added_binary_input.append(body)
+                        else:
+                            failed_binary_input.append(body)
+                    elif point_object_type.name == ObjType.binaryOutput.name:
+                        if res.status_code == 200:
+                            added_binary_output.append(body)
+                        else:
+                            failed_binary_output.append(body)
+                    elif point_object_type.name == ObjType.binaryValue.name:
+                        if res.status_code == 200:
+                            added_binary_value.append(body)
+                        else:
+                            failed_binary_value.append(body)
+                    elif point_object_type.name == ObjType.multiStateInput.name:
+                        if res.status_code == 200:
+                            added_multi_state_input.append(body)
+                        else:
+                            failed_multi_state_input.append(body)
+                    elif point_object_type.name == ObjType.multiStateOutput.name:
+                        if res.status_code == 200:
+                            added_multi_state_output.append(body)
+                        else:
+                            failed_multi_state_output.append(body)
+                    elif point_object_type.name == ObjType.multiStateValue.name:
+                        if res.status_code == 200:
+                            added_multi_state_value.append(body)
+                        else:
+                            failed_multi_state_value.append(body)
+
+        return {
+            "discovered_points": {},
+            "added_points_count": 0,
+            "added_points": {
+                "points": {
+                    "analog_inputs": added_analog_inputs,
+                    "analog_outputs": added_analog_outputs,
+                    "analog_values": added_analog_values,
+                    "binary_input": added_binary_input,
+                    "binary_output": added_binary_output,
+                    "binary_value": added_binary_value,
+                    "multi_state_input": added_multi_state_input,
+                    "multi_state_output": added_multi_state_output,
+                    "multi_state_value": added_multi_state_value
+                },
+            },
+            "existing_or_failed_points": {
+                "points": {
+                    "analog_inputs": failed_analog_inputs,
+                    "analog_outputs": failed_analog_outputs,
+                    "analog_values": failed_analog_values,
+                    "binary_input": failed_binary_input,
+                    "binary_output": failed_binary_output,
+                    "binary_value": failed_binary_value,
+                    "multi_state_input": failed_multi_state_input,
+                    "multi_state_output": failed_multi_state_output,
+                    "multi_state_value": failed_multi_state_value
+                },
+            },
+        }
 
     @staticmethod
     def common_object_no_device(**kwargs):
@@ -282,6 +369,7 @@ class BACnetFunctions:
             supported_services = SupportedServices.check_supported_services(_get_ss)
             each_device["supports_rpm"] = supported_services.get("readPropertyMultiple")
             each_device["supports_wpm"] = supported_services.get("writePropertyMultiple")
+            each_device.update({"supported_services": {}})
             if show_supported_services:
                 each_device.update({"supported_services": supported_services})
             _dict.update({device_name: each_device})

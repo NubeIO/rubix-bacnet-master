@@ -203,7 +203,32 @@ class DiscoverPoints(RubixResource):
             points = {"points": points}
             if not points:
                 raise NotFoundException(f"Can't read points {points}")
-            return points
+            return {
+                "discovered_points": points,
+                "added_points_count": 0,
+                "added_points": {
+                    "analog_inputs": [],
+                    "analog_outputs": [],
+                    "analog_values": [],
+                    "binary_input": [],
+                    "binary_output": [],
+                    "binary_value": [],
+                    "multi_state_input": [],
+                    "multi_state_output": [],
+                    "multi_state_value": []
+                },
+                "existing_or_failed_points": {
+                    "analog_inputs": [],
+                    "analog_outputs": [],
+                    "analog_values": [],
+                    "binary_input": [],
+                    "binary_output": [],
+                    "binary_value": [],
+                    "multi_state_input": [],
+                    "multi_state_output": [],
+                    "multi_state_value": []
+                }
+            }
 
 
 class AddAllPoints(RubixResource):
