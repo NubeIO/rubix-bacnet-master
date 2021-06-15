@@ -10,6 +10,7 @@ from src.bacnet_master.models.network import BacnetNetworkModel
 from src.bacnet_master.resources.rest_schema.schema_device import device_all_attributes, device_all_fields, \
     device_extra_attributes
 from src.bacnet_master.services.device import Device as DeviceService
+from src.bacnet_master.utils.functions import BACnetFunctions
 from src.utils.functions import Functions
 
 logger = logging.getLogger(__name__)
@@ -56,13 +57,16 @@ class AddDevice(DeviceBase):
             raise NotFoundException("Network not found")
         network_number = data.get("network_number")
         device_object_id = data.get("device_object_id")
-        check_object_id: BacnetDeviceModel = BacnetDeviceModel.existing_device_id_to_net(network_number, device_object_id)
+        check_object_id: BacnetDeviceModel = BacnetDeviceModel.existing_device_id_to_net(network_number,
+                                                                                         device_object_id)
         if check_object_id:
-            raise NotFoundException(f"Device same Object ID:{device_object_id} and Network Number:{network_number} already exists")
+            raise NotFoundException(
+                f"Device same Object ID:{device_object_id} and Network Number:{network_number} already exists")
         check_mac_address: BacnetDeviceModel = BacnetDeviceModel.existing_net_to_mac(network_number, device_mac)
         if type_mstp:
             if check_mac_address:
-                raise NotFoundException(f"Device same mac address:{device_mac} and Network Number:{network_number} already exists")
+                raise NotFoundException(
+                    f"Device same mac address:{device_mac} and Network Number:{network_number} already exists")
         device: BacnetDeviceModel = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if device is None:
             device = Device.create_device_model_obj(device_uuid, data)
@@ -143,8 +147,14 @@ class DeleteDevices(DeviceBase):
 class DeviceList(DeviceBase):
     @classmethod
     @marshal_with(device_all_fields, envelope="devices")
-    def get(cls):
-        return BacnetDeviceModel.find_all()
+    def get(cls, with_children):
+        with_children = Functions.to_bool(with_children)
+        if not with_children:
+            network = BacnetDeviceModel.find_all()
+            network[0].points = []
+            return network
+        else:
+            return BacnetDeviceModel.find_all()
 
     @classmethod
     @marshal_with(device_all_fields)
@@ -186,36 +196,39 @@ class DiscoverPoints(RubixResource):
         add_points = Functions.to_bool(add_points)
         if not device:
             raise NotFoundException(f"No device with that ID is added {device_uuid}")
-        points = DeviceService.get_instance().read_point_list(device)
-        if not points:
-            raise NotFoundException(f"Can't read points {points}")
-        points = {"points": points}
         if add_points:
-            host = '0.0.0.0'
-            port = '1718'
-            url = f"http://{host}:{port}/api/bm/point"
-            for point_group in points.get("points"):
-                _point_group = points.get("points")
-                _point_group = _point_group.get(point_group)
-                if _point_group:
-                    for point in _point_group:
-                        device_uuid = device_uuid
-                        point_object_type = ObjType.has_value_by_name(point_group)
-                        point_name = point.get("point_name")
-                        point_object_id = point.get("point_object_id")
-                        body = {
-                            "point_name": point_name,
-                            "point_enable": True,
-                            "point_object_id": point_object_id,
-                            "point_object_type": point_object_type.name,
-                            "device_uuid": device_uuid
-                        }
+            return BACnetFunctions.add_points(device_uuid)
+        else:
+            points = DeviceService.get_instance().read_point_list(device)
+            points = {"points": points}
+            if not points:
+                raise NotFoundException(f"Can't read points {points}")
+            return points
 
-                        requests.put(url,
-                                     headers={'Content-Type': 'application/json'},
-                                     json=body)
 
-        return points
+class AddAllPoints(RubixResource):
+    @classmethod
+    def get(cls, network_uuid):
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not network:
+            raise NotFoundException("Network not found")
+        host = '0.0.0.0'
+        port = '1718'
+        url = f"http://{host}:{port}/api/bm/network/{network_uuid}"
+        network = requests.get(url).json()
+        if not network:
+            raise NotFoundException("Network not found")
+        count = 0
+        devices = {}
+        for device in network.get("devices"):
+            device_uuid = device["device_uuid"]
+            device_name = device["device_name"]
+            res = BACnetFunctions.add_points(device_uuid)
+            count = count + 1
+            devices.update({"devices_found": count})
+            name = f"{device_name}_{device_uuid}"
+            devices.update({name: res})
+        return devices
 
 
 class GetAllPoints(RubixResource):

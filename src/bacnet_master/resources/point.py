@@ -140,13 +140,13 @@ class PointBACnetRead(RubixResource):
         timeout = data.get('timeout')
         if timeout:
             timeout = Functions.to_int(timeout)
-            if not isinstance(timeout, str):
-                raise InternalServerErrorException(f"Error: {timeout}")
+            if not isinstance(timeout, int):
+                raise InternalServerErrorException(f"Error: timeout must be an int {timeout}")
         if not point:
             raise NotFoundException('Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
         if not isinstance(read, (int, float)):
-            raise InternalServerErrorException(f"Error: {read}")
+            raise InternalServerErrorException(f"Error on point read: {read}")
         if get_priority:
             priority = DeviceService.get_instance().get_point_priority(point)
             return {
@@ -155,7 +155,7 @@ class PointBACnetRead(RubixResource):
                 "point_object_type": point.point_object_type,
                 "point_uuid": point_uuid,
                 "point_value": read,
-                "priority": priority
+                "priority_array": priority
             }
         else:
             return {
@@ -163,7 +163,8 @@ class PointBACnetRead(RubixResource):
                 "point_object_id": point.point_object_id,
                 "point_object_type": point.point_object_type,
                 "point_uuid": point_uuid,
-                "point_value": read
+                "point_value": read,
+                "priority_array": {},
             }
 
 
@@ -179,7 +180,6 @@ class PointBACnetWrite(RubixResource):
         priority = int(priority)
         feedback = data.get('feedback')
         timeout = data.get('timeout')
-
         # feedback = Functions.to_bool(feedback)
         if not isinstance(point_write_value, (int, float)):
             raise InternalServerErrorException(f"Error on point write: value must be a number {point_write_value}")

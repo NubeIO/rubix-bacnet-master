@@ -9,6 +9,7 @@ from src.bacnet_master.models.network import BacnetNetworkModel
 from src.bacnet_master.resources.rest_schema.schema_network_whois import network_whois_all_attributes, \
     network_unknown_device_objects_attributes, point_unknown_read_point_pv_attributes
 from src.bacnet_master.services.device import Device as DeviceService
+from src.bacnet_master.utils.functions import BACnetFunctions
 from src.utils.functions import Functions
 
 logger = logging.getLogger(__name__)
@@ -38,71 +39,29 @@ class Whois(NetworkWhois):
         range_start = data['range_start']
         range_end = data['range_end']
         add_devices = data['add_devices']
+        is_mstp = data['is_mstp']
+        show_supported_services = data['show_supported_services']
         add_devices = Functions.to_bool(add_devices)
+        show_supported_services = Functions.to_bool(show_supported_services)
         devices = DeviceService().whois(network_uuid, whois=whois,
                                         network_number=network_number,
                                         global_broadcast=global_broadcast,
                                         full_range=full_range,
                                         range_start=range_start,
-                                        range_end=range_end)
+                                        range_end=range_end,
+                                        is_mstp=is_mstp,
+                                        show_supported_services=show_supported_services)
         if not add_devices:
             return {
                 "discovered_devices": devices,
                 "added_devices_count": 0,
-                "added_devices":  {},
+                "added_devices": {},
                 "existing_or_failed_to_add": {},
 
             }
 
         elif add_devices:
-            host = '0.0.0.0'
-            port = '1718'
-            url = f"http://{host}:{port}/api/bm/device"
-            added_devices = {}
-            fail_add_devices = {}
-            count = 0
-            for idx, device in enumerate(devices):
-                _device = devices.get(device)
-                device_name = _device.get("device_name")
-                device_ip = _device.get("device_ip")
-                device_mask = _device.get("device_mask", 24)
-                device_port = _device.get("device_port", 47808)
-                device_mac = _device.get("device_mac")
-                device_object_id = _device.get("device_object_id")
-                network_number = _device.get("network_number")
-                type_mstp = _device.get("type_mstp")
-                network_uuid = network_uuid
-                body = {
-                    "device_name": device_name,
-                    "device_ip": device_ip,
-                    "device_mask": device_mask,
-                    "device_port": device_port,
-                    "device_mac": device_mac,
-                    "device_object_id": device_object_id,
-                    "network_number": network_number,
-                    "type_mstp": type_mstp,
-                    "supports_rpm": False,
-                    "supports_wpm": False,
-                    "network_uuid": network_uuid
-                }
-                res = requests.put(url,
-                                   headers={'Content-Type': 'application/json'},
-                                   json=body)
-
-                if res.status_code == 200:
-                    count = count + 1
-                    dev = {device_name: body}
-                    added_devices.update(dev)
-                else:
-                    dev = {device_name: body}
-                    fail_add_devices.update(dev)
-
-            return {
-                "discovered_devices": devices,
-                "added_devices_count": count,
-                "added_devices": added_devices,
-                "existing_or_failed_to_add": fail_add_devices
-            }
+            return BACnetFunctions.who_add_devices(devices, network_uuid)
 
 
 class NetworkUnknownDeviceObjects(RubixResource):
@@ -117,7 +76,7 @@ class NetworkUnknownDeviceObjects(RubixResource):
 
 class UnknownDeviceObjects(NetworkUnknownDeviceObjects):
     @classmethod
-    def post(cls, net_uuid):
+    def post(cls, network_uuid):
         data = UnknownDeviceObjects.parser.parse_args()
         device_object_id = data['device_object_id']
         device_ip = data['device_ip']
@@ -135,7 +94,7 @@ class UnknownDeviceObjects(NetworkUnknownDeviceObjects):
             "type_mstp": type_mstp,
             "network_number": network_number
         }
-        return DeviceService().unknown_get_object_list(net_uuid, device)
+        return DeviceService().unknown_get_object_list(network_uuid, device)
 
 
 class PointUnknownReadPointPv(RubixResource):
@@ -150,7 +109,7 @@ class PointUnknownReadPointPv(RubixResource):
 
 class UnknownReadPointPv(PointUnknownReadPointPv):
     @classmethod
-    def post(cls, net_uuid):
+    def post(cls, network_uuid):
         data = UnknownReadPointPv.parser.parse_args()
         device_object_id = data['device_object_id']
         device_ip = data['device_ip']
@@ -172,4 +131,4 @@ class UnknownReadPointPv(PointUnknownReadPointPv):
             "point_object_id": point_object_id,
             "point_object_type": point_object_type
         }
-        return DeviceService().unknown_get_point_pv(net_uuid, device)
+        return DeviceService().unknown_get_point_pv(network_uuid, device)

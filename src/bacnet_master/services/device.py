@@ -3,6 +3,7 @@ import BAC0
 from BAC0.core.io.IOExceptions import UnknownObjectError, NoResponseFromController
 
 from src.bacnet_master.interfaces.device import ObjType
+from src.bacnet_master.interfaces.device_supported_services import SupportedServices
 from src.bacnet_master.interfaces.object_property import ObjProperty
 from src.bacnet_master.models.device import BacnetDeviceModel
 from src.bacnet_master.models.network import BacnetNetworkModel
@@ -57,9 +58,11 @@ class Device:
         type_mstp = kwargs.get('type_mstp') or device.type_mstp or False
         device_mac = kwargs.get('device_mac') or device.device_mac
         object_instance = kwargs.get('object_instance') or device.device_object_id
-        network_number = kwargs.get('network_number') or device.network_number
+        network_number = kwargs.get('network_number')
+        if network_number != 0:
+            network_number = device.network_number
         network_number = BACnetFunctions.network_number(network_number)
-        object_type = kwargs.get('object_type') or ObjType.device.get_name
+        object_type = kwargs.get('object_type') or ObjType.device.name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
@@ -67,6 +70,8 @@ class Device:
             return f'{network_number}:{dev_url} {object_type} {object_instance} {prop}'
         else:
             return f'{dev_url} {object_type} {object_instance} {prop}'
+
+
 
     def _get_objects_unknown(self, device, **kwargs):
         """192.168.15.202/24:47808 device 202 objectList"""
@@ -76,22 +81,32 @@ class Device:
         object_instance = kwargs.get('object_instance') or device.get("device_object_id")
         network_number = device.get("network_number")
         network_number = BACnetFunctions.network_number(network_number)
-        object_type = kwargs.get('object_type') or ObjType.device.get_name
+        object_type = kwargs.get('object_type') or ObjType.device.name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
+        build_device_address = device.get("build_device_address")
         logger.info(f"GET DEVICE OBJECT LIST  dev_url:{dev_url}, type_mstp:{type_mstp}, "
                     f"device_mac:{device_mac}, device_object_id:{object_instance}, "
                     f"network_number:{network_number}")
-        if type_mstp:
-            # print(bacnet.read('192.168.15.202/24:47808 analogOutput 1 presentValue'))  # or 85
-            # print(bacnet.read('192.168.15.202/24:47808 object_type object_instance prop'))  # or 85
-            logger.info(f"GET DEVICE OBJECT LIST - TYPE MSTP")
-            return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
-        if network_number != 0:
-            logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with network number{network_number}")
-            return f'{network_number}:{dev_url} {object_type} {object_instance} {prop}'
+        if not build_device_address:
+            if type_mstp:
+                logger.info(f"GET DEVICE OBJECT LIST - TYPE MSTP")
+                return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            if network_number != 0:
+                logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with network number{network_number}")
+                return f'{network_number}:{dev_url} {object_type} {object_instance} {prop}'
+            else:
+                logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with NO network number{network_number}")
+                return f'{dev_url} {object_type} {object_instance} {prop}'
         else:
-            logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with NO network number{network_number}")
-            return f'{dev_url} {object_type} {object_instance} {prop}'
+            if type_mstp:
+                logger.info(f"BUILD DEVICE ADDRESS - TYPE MSTP: {network_number}:{device_mac}")
+                return f'{network_number}:{device_mac}'
+            if network_number != 0:
+                logger.info(f"BUILD DEVICE ADDRESS  - TYPE IP with network number:{network_number}:{dev_url}")
+                return f'{network_number}:{dev_url}'
+            else:
+                logger.info(f"BUILD DEVICE ADDRESS  - TYPE IP with dev_url:{dev_url}")
+                return f'{dev_url}'
 
     def _get_network_from_device(self, device):
         return Network.get_instance().get_network(device.network)
@@ -110,6 +125,7 @@ class Device:
         if network_instance:
             try:
                 value = network_instance.read(read)
+                value = BACnetFunctions.clean_point_value(value)
                 logger.info(f"DO POINT READ: {read}: return value:{value}")
                 return value
             except UnknownObjectError as e:
@@ -203,6 +219,13 @@ class Device:
             device_uuid = device["device_uuid"]
             device_object_id = device["device_object_id"]
             device_ip = device["device_ip"]
+            network_number = device["network_number"]
+            type_mstp = device["type_mstp"]
+            supports_rpm = device["supports_rpm"]
+            supports_wpm = device["supports_wpm"]
+            address = self._get_objects_unknown(device,
+                                                build_device_address=True
+                                                )
             point_uuid_list = []
             point_name_list = []
             for point in device.get("points"):
@@ -218,7 +241,7 @@ class Device:
                     point_object_id = point.get("point_object_id")
                     point_key = f"{point_object_type}:{point_object_id}"
                     _list.update({point_key: props})
-            _rpm = {'address': device_ip,
+            _rpm = {'address': address,
                     'objects': _list
                     }
             objects_dict = _rpm.get("objects")
@@ -249,6 +272,7 @@ class Device:
                             try:
                                 obj = f"{_objects[0]}"
                                 value = f"{_objects[1]}"
+                                value = BACnetFunctions.clean_active_inactive(value)
                                 new_object = {obj: value}
                                 _device_points.remove(_objects)
                                 _device_points.append(new_object)
@@ -285,6 +309,7 @@ class Device:
         obj_present_value = ObjProperty.presentValue.name
         point_types = ["analogInput", "analogOutput", "analogValue", "binaryInput", "binaryOutput",
                        "binaryValue", "multiStateInput", "multiStateOutput", "multiStateValue"]
+
         for obj in object_list:
             object_type = obj[0]
             object_instance = obj[1]
@@ -350,9 +375,6 @@ class Device:
         if not network_instance:
             return {"network_instance": "network instance is none"}
         read = self._common_object(device)
-        print(1111)
-        print(read)
-        print(1111)
         try:
             if network_instance:
                 return network_instance.read(read)
@@ -369,6 +391,8 @@ class Device:
         min_range = 0
         max_range = 4194302
         full_range = kwargs.get('full_range', False)
+        is_mstp = kwargs.get('is_mstp')
+        show_supported_services = kwargs.get('show_supported_services')
         if full_range:
             range_start = min_range
             range_end = max_range
@@ -383,43 +407,36 @@ class Device:
         network_number = BACnetFunctions.network_number(network_number)
         whois = kwargs.get('whois', True)
         global_broadcast = kwargs.get('global_broadcast', False)
-        who = BACnetFunctions.common_whois(range_start=range_start, range_end=range_end, network_number=network_number)
-        logger.info(f"WHOIS network_id:{network_uuid} whois -> {whois} who {who}, global_broadcast:{global_broadcast} "
-                    f", network_number:{network_number}, range_start:{range_start}, range_end:{range_end}")
+        who = BACnetFunctions.common_whois(range_start=range_start,
+                                           range_end=range_end,
+                                           network_number=network_number,
+                                           is_mstp=is_mstp)
         try:
             if whois:
-                read = network_instance.whois(who, global_broadcast)
-                _list = {}
-                for objects in read:
-                    each_device = BACnetFunctions.whois_split(objects)
-                    dev = each_device.get('device_name')
-                    _list.update({dev: each_device})
-                return _list
+                logger.info(f"WHOIS:{who}")
+                whois_response = network_instance.whois(who, global_broadcast)
+                logger.info(f"WHOIS response:{whois_response}")
+                _whois_response = BACnetFunctions.whois_is_build(whois_response, network_instance, show_supported_services)
+                return _whois_response
 
             else:
                 if network_number == 0:
-                    logger.info(
-                        f"WHOIS network_id:{network_uuid} discover -> range:{range_start},{range_end} , global_broadcast: {global_broadcast}")
+                    logger.info(f"WHOIS DISCOVER without network number:{who}")
                     network_instance.discover(limits=(range_start, range_end), global_broadcast=global_broadcast)
-                    _list = {}
-                    for objects in network_instance.devices:
-                        each_device = BACnetFunctions.whois_split(objects)
-                        dev = each_device.get('device_name')
-                        _list.update({dev: each_device})
-                    return _list
+                    logger.info(f"WHOIS response:{network_instance.devices}")
+                    _whois_response = BACnetFunctions.whois_is_build(network_instance.devices, network_instance, show_supported_services)
+                    return _whois_response
+
                 else:
-                    logger.info(
-                        f"WHOIS network_id:{network_uuid} discover -> network_number:{network_number} "
-                        f"range:{range_start},{range_end}, global_broadcast:{global_broadcast}")
+                    logger.info(f"WHOIS DISCOVER with network number:{who}")
                     network_instance.discover(networks=[network_number], limits=(range_start, range_end),
                                               global_broadcast=global_broadcast)
-                    _list = {}
-                    for objects in network_instance.devices:
-                        each_device = BACnetFunctions.whois_split(objects)
-                        dev = each_device.get('device_name')
-                        _list.update({dev: each_device})
-                    return _list
-        except:
+                    logger.info(f"WHOIS response:{network_instance.devices}")
+                    _whois_response = BACnetFunctions.whois_is_build(network_instance.devices, network_instance, show_supported_services)
+                    return _whois_response
+
+        except Exception as e:
+            logger.error(f"WHO IS error: {e}")
             return {}
 
     def unknown_get_object_list(self, net_uuid, device):

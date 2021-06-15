@@ -35,7 +35,18 @@ network_whois_all_attributes = {
         'type': bool,
         'required': False,
         'help': 'Set to true if you wanna add all discovered devices'
+    },
+    'is_mstp': {
+        'type': bool,
+        'required': False,
+        'help': 'Set the network type is mstp'
+    },
+    'show_supported_services': {
+        'type': bool,
+        'required': False,
+        'help': 'Set the network type is mstp'
     }
+
 }
 
 network_unknown_device_objects_attributes = {
