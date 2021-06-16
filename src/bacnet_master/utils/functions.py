@@ -6,7 +6,7 @@ from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.interfaces.device_supported_services import SupportedServices
 from src.bacnet_master.interfaces.object_property import ObjProperty
 from src.utils.functions import Functions
-from rubix_http.exceptions.exception import NotFoundException, BadDataException, InternalServerErrorException
+from rubix_http.exceptions.exception import NotFoundException, BadDataException
 
 logger = logging.getLogger(__name__)
 

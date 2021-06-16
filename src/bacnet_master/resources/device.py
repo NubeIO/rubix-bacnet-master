@@ -1,7 +1,7 @@
 import logging
 import requests
 from flask_restful import reqparse, marshal_with
-from rubix_http.exceptions.exception import NotFoundException, BadDataException, InternalServerErrorException
+from rubix_http.exceptions.exception import NotFoundException, BadDataException
 from rubix_http.resource import RubixResource
 
 from src.bacnet_master.interfaces.device import ObjType
@@ -186,7 +186,7 @@ class DeviceObjectList(RubixResource):
             points = DeviceService.get_instance().get_object_list(device)
             res = {**res, 'objects': points}
         except Exception as e:
-            raise InternalServerErrorException(str(e))
+            raise BadDataException(str(e))
         return res
 
 
