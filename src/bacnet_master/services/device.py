@@ -166,11 +166,11 @@ class Device:
         point_object = point.point_object_type
         if value != 'null':
             value = float(value)
-        if point_object == ObjType.binaryOutput or point_object == ObjType.binaryValue:
-            if value >= 1:
-                value = "active"
-            elif value < 1:
-                value = "inactive"
+            if point_object == ObjType.binaryOutput or point_object == ObjType.binaryValue:
+                if value >= 1:
+                    value = "active"
+                elif value < 1:
+                    value = "inactive"
         cmd = self._common_point(point, device)
         write = f"{cmd} {value} - {priority}"
         if network_instance:
