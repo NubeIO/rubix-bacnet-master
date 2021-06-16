@@ -83,6 +83,19 @@ class BACnetFunctions:
             return f'{device_range_start} {device_range_end}'
 
     @staticmethod
+    def build_device_bac0_call(**kwargs):
+        dev_url = kwargs.get("dev_url")
+        network_number = kwargs.get("network_number")
+        network_number = BACnetFunctions.network_number(network_number)
+        device_mac = kwargs.get("device_mac")
+        if device_mac >= 1:
+            return f'{network_number}:{device_mac}'
+        if network_number != 0:
+            return f'{network_number}:{dev_url}'
+        else:
+            return f'{dev_url}'
+
+    @staticmethod
     def build_url(device=None, **kwargs):
         if isinstance(device, dict):
             ip = kwargs.get('device_ip')
@@ -186,20 +199,21 @@ class BACnetFunctions:
         }
 
     @staticmethod
-    def add_points(device_uuid):
+    def add_points(device_uuid, get_pv, add_points):
         from src.bacnet_master.models.device import BacnetDeviceModel
         from src.bacnet_master.services.device import Device as DeviceService
         device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if not device:
             raise NotFoundException(f"No device with that ID is added {device_uuid}")
-        points = DeviceService.get_instance().read_point_list(device)
+        points = DeviceService.get_instance().read_point_list(device, get_pv)
         if not points:
             raise NotFoundException(f"Can't read points {points}")
-        points = {"points": points}
+        _points = {"points": points.get("points")}
+        if not add_points:
+            return _points
         host = '0.0.0.0'
         port = '1718'
         url = f"http://{host}:{port}/api/bm/point"
-
         count = 0
         added_analog_inputs = []
         added_analog_outputs = []
@@ -220,12 +234,13 @@ class BACnetFunctions:
         failed_multi_state_output = []
         failed_multi_state_value = []
 
-        for point_group in points.get("points"):
-            _point_group = points.get("points")
+        for point_group in list(_points.get("points")):
+            _point_group = _points.get("points")
             _point_group = _point_group.get(point_group)
             if _point_group:
                 for point in _point_group:
                     device_uuid = device_uuid
+
                     point_object_type = ObjType.has_value_by_name(point_group)
                     point_name = point.get("point_name")
                     point_object_id = point.get("point_object_id")
@@ -288,7 +303,8 @@ class BACnetFunctions:
                             failed_multi_state_value.append(body)
 
         return {
-            "discovered_points": {},
+            "discovered_points": _points,
+            "discovery_errors": points.get("discovery_errors"),
             "added_points_count": 0,
             "added_points": {
                 "points": {

@@ -150,9 +150,10 @@ class DeviceList(DeviceBase):
     def get(cls, with_children):
         with_children = Functions.to_bool(with_children)
         if not with_children:
-            network = BacnetDeviceModel.find_all()
-            network[0].points = []
-            return network
+            devices = BacnetDeviceModel.find_all()
+            for device in devices:
+                device.points = []
+            return devices
         else:
             return BacnetDeviceModel.find_all()
 
@@ -191,49 +192,58 @@ class DeviceObjectList(RubixResource):
 
 class DiscoverPoints(RubixResource):
     @classmethod
-    def get(cls, device_uuid, add_points):
+    def post(cls, device_uuid, add_points, get_pv):
+        # data = Device.post_parser.parse_args()
+        get_pv = Functions.to_bool(get_pv)
         device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         add_points = Functions.to_bool(add_points)
         if not device:
             raise NotFoundException(f"No device with that ID is added {device_uuid}")
         if add_points:
-            return BACnetFunctions.add_points(device_uuid)
+            return BACnetFunctions.add_points(device_uuid, get_pv, add_points)
         else:
-            points = DeviceService.get_instance().read_point_list(device)
-            points = {"points": points}
+            points = DeviceService.get_instance().read_point_list(device, get_pv)
+            print(points.get("discovery_errors"))
+            # points = {"points": points}
+
             if not points:
                 raise NotFoundException(f"Can't read points {points}")
             return {
-                "discovered_points": points,
+                "discovered_points": {"points": points.get("points")},
+                "discovery_errors": points.get("discovery_errors"),
                 "added_points_count": 0,
                 "added_points": {
-                    "analog_inputs": [],
-                    "analog_outputs": [],
-                    "analog_values": [],
-                    "binary_input": [],
-                    "binary_output": [],
-                    "binary_value": [],
-                    "multi_state_input": [],
-                    "multi_state_output": [],
-                    "multi_state_value": []
+                    "points": {
+                        "analog_inputs": [],
+                        "analog_outputs": [],
+                        "analog_values": [],
+                        "binary_input": [],
+                        "binary_output": [],
+                        "binary_value": [],
+                        "multi_state_input": [],
+                        "multi_state_output": [],
+                        "multi_state_value": []
+                    }
                 },
                 "existing_or_failed_points": {
-                    "analog_inputs": [],
-                    "analog_outputs": [],
-                    "analog_values": [],
-                    "binary_input": [],
-                    "binary_output": [],
-                    "binary_value": [],
-                    "multi_state_input": [],
-                    "multi_state_output": [],
-                    "multi_state_value": []
+                    "points": {
+                        "analog_inputs": [],
+                        "analog_outputs": [],
+                        "analog_values": [],
+                        "binary_input": [],
+                        "binary_output": [],
+                        "binary_value": [],
+                        "multi_state_input": [],
+                        "multi_state_output": [],
+                        "multi_state_value": []
+                    }
                 }
             }
 
 
 class AddAllPoints(RubixResource):
     @classmethod
-    def get(cls, network_uuid):
+    def post(cls, network_uuid, add_points):
         network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
         if not network:
             raise NotFoundException("Network not found")
@@ -241,6 +251,8 @@ class AddAllPoints(RubixResource):
         port = '1718'
         url = f"http://{host}:{port}/api/bm/network/{network_uuid}"
         network = requests.get(url).json()
+        get_pv = False
+        add_points = Functions.to_bool(add_points)
         if not network:
             raise NotFoundException("Network not found")
         count = 0
@@ -248,7 +260,7 @@ class AddAllPoints(RubixResource):
         for device in network.get("devices"):
             device_uuid = device["device_uuid"]
             device_name = device["device_name"]
-            res = BACnetFunctions.add_points(device_uuid)
+            res = BACnetFunctions.add_points(device_uuid, get_pv, add_points)
             count = count + 1
             devices.update({"devices_found": count})
             name = f"{device_name}_{device_uuid}"
@@ -258,7 +270,7 @@ class AddAllPoints(RubixResource):
 
 class GetAllPoints(RubixResource):
     @classmethod
-    def get(cls, network_uuid, timeout):
+    def post(cls, network_uuid, timeout):
         network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
         if not network:
             raise NotFoundException("Network not found")

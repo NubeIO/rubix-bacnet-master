@@ -30,6 +30,11 @@ point_all_attributes = {
         'required': False,
         'help': 'enable/disable operation'
     },
+    'point_writable': {
+        'type': bool,
+        'required': False,
+        'help': 'enable/disable operation of point write'
+    },
     'point_object_id': {
         'type': int,
         'required': False,
@@ -62,13 +67,18 @@ point_all_attributes = {
         'required': False,
         'help': 'point_name must be a string'
     },
-    'priority': {
-        'type': int,
+    'point_value': {
+        'type': float,
         'required': False,
         'help': 'point_name must be a string'
     },
-    'point_value': {
+    'point_write_value': {
         'type': float,
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'priority': {
+        'type': int,
         'required': False,
         'help': 'point_name must be a string'
     },
@@ -77,11 +87,6 @@ point_all_attributes = {
         'required': False,
         'help': 'point_name must be a string'
     },
-    'point_write_value': {
-        'type': float,
-        'required': False,
-        'help': 'point_name must be a string'
-    }
 }
 
 point_extra_attributes = {

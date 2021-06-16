@@ -1,11 +1,6 @@
 import BAC0
 
-
-
 bacnet = BAC0.lite()
-
-
-
 
 # print(bacnet.discover(networks=[1001]))
 # print(bacnet.discover(networks='known'))
@@ -26,13 +21,10 @@ bacnet = BAC0.lite()
 # print(bacnet.whois('1001:31'))  # WhoIs looking for the device at (Network 1001, Address 31)
 # print(bacnet.whois('1001:10 1000'))  # WhoIs looking for the device at (Network 1001, Devices in the ID range (10 - 1000))
 # print(bacnet.whois('10 1000'))  # WhoIs looking for devices in the ID range (10 - 1000)
-# print(bacnet.whois("1001:*"))  # all devices on network 1001
+print(bacnet.whois("1001:*"))  # all devices on network 1001
 # print(bacnet.devices)
 
 # read_vals = f' 192.168.15.202 device 202 objectList'
 # #
 # points = bacnet.read(read_vals)
 # print(points)
-
-
-

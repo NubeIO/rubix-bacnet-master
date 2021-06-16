@@ -61,6 +61,8 @@ class Whois(NetworkWhois):
             }
 
         elif add_devices:
+            if not devices:
+                raise NotFoundException("no devices found and or an error")
             return BACnetFunctions.who_add_devices(devices, network_uuid)
 
 

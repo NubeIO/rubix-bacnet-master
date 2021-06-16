@@ -35,10 +35,10 @@ api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:point
 api_bacnet_master.add_resource(PointBACnetWrite,
                                '/b/points/write/pv/<string:point_uuid>')  # write point pv
 api_bacnet_master.add_resource(PointRelease,
-                               '/b/points/write/release/<string:point_uuid>/<string:priority>/<string:feedback>')  # release point pv
+                               '/b/points/write/release/<string:point_uuid>')  # release point pv
 
-api_bacnet_master.add_resource(DiscoverPoints, '/b/points/discover_points/<string:device_uuid>/<string:add_points>')  # build points list
-api_bacnet_master.add_resource(AddAllPoints, '/b/points/network_point_list/add/<string:network_uuid>')  # build points list
+api_bacnet_master.add_resource(DiscoverPoints, '/b/points/discover_points/<string:device_uuid>/<string:add_points>/<string:get_pv>')  # build points list
+api_bacnet_master.add_resource(AddAllPoints, '/b/points/network_point_list/add/<string:network_uuid>/<string:add_points>')  # build points list
 api_bacnet_master.add_resource(GetAllPoints, '/b/points/network_point_list/<string:network_uuid>/<string:timeout>')  # build points list
 api_bacnet_master.add_resource(DeviceObjectList, '/b/device/objects/<string:device_uuid>')
 api_bacnet_master.add_resource(UnknownDeviceObjects, '/b/device/unknown/objects/<string:network_uuid>')
