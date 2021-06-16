@@ -241,6 +241,8 @@ class DiscoverPoints(RubixResource):
             }
 
 
+
+
 class AddAllPoints(RubixResource):
     @classmethod
     def post(cls, network_uuid, add_points):

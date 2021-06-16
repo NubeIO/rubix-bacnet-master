@@ -298,7 +298,8 @@ class Device:
                                     logger.info(f"ERROR on: read_point_list_by_network")
 
                     _dev = {
-                        device_uuid: {"deviceUUID": device_uuid, "deviceName": device_name, "deviceId": device_object_id,
+                        device_uuid: {"deviceUUID": device_uuid, "deviceName": device_name,
+                                      "deviceId": device_object_id,
                                       "points": bacnet_return}}
                     build_points_list.update(_dev)
                     _list = {}
@@ -308,6 +309,122 @@ class Device:
                                                       "deviceId": device_object_id, "points": False}
         points_list = {network_uuid: build_points_list}
         return points_list
+
+    def read_point_object(self, device, network_instance, **kwargs) -> dict:
+        object_instance = kwargs.get('object_instance')
+        object_type = kwargs.get('object_type')
+        prop = kwargs.get('prop')
+        try:
+            value = network_instance.read(
+                self._common_object(device,
+                                    object_type=object_type,
+                                    object_instance=object_instance,
+                                    prop=prop))
+            return {
+                "value": value,
+                "error": None
+
+            }
+        except UnknownObjectError as e:
+            logger.error(
+                f"UnknownObjectError: {e}")
+            return {
+                "value": None,
+                "error": e
+            }
+
+    def build_point_list(self, device, get_point_name, get_point_value, get_point_priority):
+        network_instance = self._get_network_from_device(device)
+        if not network_instance:
+            return {"network_instance": "network instance is none"}
+        analog_inputs = []
+        analog_outputs = []
+        analog_values = []
+        binary_input = []
+        binary_output = []
+        binary_value = []
+        multi_state_input = []
+        multi_state_output = []
+        multi_state_value = []
+        object_list = network_instance.read(self._common_object(device))
+        obj_name = ObjProperty.objectName.name
+        obj_present_value = ObjProperty.presentValue.name
+        point_types = ["analogInput", "analogOutput", "analogValue", "binaryInput", "binaryOutput",
+                       "binaryValue", "multiStateInput", "multiStateOutput", "multiStateValue"]
+        discovery_errors = []
+        for obj in object_list:
+            object_type = obj[0]
+            object_instance = obj[1]
+
+            if object_type in point_types:
+                point_name = None
+                point_value = None
+                point_object_id = obj[1]
+                if get_point_name:
+                    read = self.read_point_object(device, network_instance, object_type=object_type,
+                                                  object_instance=object_instance,
+                                                  prop=obj_name)
+                    err = read.get("error")
+                    point_name = read.get("value")
+                    if err:
+                        name = f"{object_type}_{point_object_id}_point_name"
+                        err = str(err)
+                        discovery_errors.append({name: err})
+
+                if get_point_value:
+                    read = self.read_point_object(device, network_instance, object_type=object_type,
+                                                  object_instance=object_instance,
+                                                  prop=obj_present_value)
+                    err = read.get("error")
+                    point_value = BACnetFunctions.clean_point_value(read.get("value"))
+                    if err:
+                        name = f"{object_type}_{point_object_id}_point_name"
+                        err = str(err)
+                        discovery_errors.append({name: err})
+
+                if object_type == "analogInput":
+                    analog_inputs.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "analogOutput":
+                    analog_outputs.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "analogValue":
+                    analog_outputs.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "binaryInput":
+                    binary_input.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "binaryOutput":
+                    binary_output.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "binaryValue":
+                    binary_value.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "multiStateInput":
+                    multi_state_input.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "multiStateOutput":
+                    multi_state_output.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+                elif object_type == "multiStateValue":
+                    multi_state_value.append(
+                        {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
+
+        return {
+            "discovery_errors": discovery_errors,
+            "points": {
+                "analog_inputs": analog_inputs,
+                "analog_outputs": analog_outputs,
+                "analog_values": analog_values,
+                "binary_input": binary_input,
+                "binary_output": binary_output,
+                "binary_value": binary_value,
+                "multi_state_input": multi_state_input,
+                "multi_state_output": multi_state_output,
+                "multi_state_value": multi_state_value
+
+            }
+        }
 
     def read_point_list(self, device, get_pv):
         network_instance = self._get_network_from_device(device)

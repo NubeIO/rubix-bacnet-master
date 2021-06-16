@@ -46,12 +46,13 @@ class AddPoint(PointBase):
         point_name = data.get("point_name")
         point_object_id = data.get("point_object_id")
         point_object_type = data.get("point_object_type")
-        check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(point_object_id, point_object_type)
+        device_uuid = data.get("device_uuid")
+        check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid, point_object_id, point_object_type)
         if check_object_id:
             raise NotFoundException(f"Point same Object Type and Object id exists id:{point_object_id}")
         check_name: BacnetPointModel = BacnetPointModel.existing_object_name(point_name)
         if check_name:
-            raise NotFoundException(f"Point name with that device exists {point_name}")
+            raise NotFoundException(f"Point name with that device exists point_name:{point_name}")
         point: BacnetPointModel = BacnetPointModel.find_by_point_uuid(point_uuid)
         if point is None:
             point = Point.create_model(point_uuid, data)

@@ -28,3 +28,4 @@ print(bacnet.whois("1001:*"))  # all devices on network 1001
 # #
 # points = bacnet.read(read_vals)
 # print(points)
+

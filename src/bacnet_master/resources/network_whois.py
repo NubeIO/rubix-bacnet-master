@@ -66,6 +66,56 @@ class Whois(NetworkWhois):
             return BACnetFunctions.who_add_devices(devices, network_uuid)
 
 
+class NetworkAllPoints(RubixResource):
+    @classmethod
+    def post(cls, network_uuid):
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not network:
+            raise NotFoundException("Network not found")
+        data = Whois.parser.parse_args()
+        add_points = data.get('add_points')
+        fast_poll = data.get('fast_poll')
+        timeout = data.get('timeout')
+        get_point_name = None
+        get_point_priority = None
+        get_point_value = None
+        if add_points:
+            get_point_name = True
+        else:
+            if fast_poll:
+                get_point_value = True
+            else:
+                get_point_name = True
+                get_point_value = True
+                get_point_priority = True
+
+        if not network:
+            raise NotFoundException("Network not found")
+        count = 0
+        devices = {}
+        devices_list = {}
+        print("add_points", add_points)
+        print("fast_poll", fast_poll)
+        print(get_point_name, get_point_priority, get_point_value)
+        for device in network.devices:
+            device_uuid = device.device_uuid
+            device_name = device.device_name
+            points = DeviceService.get_instance().build_point_list(device, get_point_name, get_point_value,
+                                                                   get_point_priority)
+            count = count + 1
+            devices.update({"devices_found": count})
+            name = f"{device_name}_{device_uuid}"
+            name2 = f"points_{device_name}_{device_uuid}"
+            devices.update({name: points})
+            if add_points:
+                _points = BACnetFunctions.add_points2(device_uuid, points, device_name)
+                devices_list.update({name2: _points})
+        if add_points:
+            return devices_list
+        else:
+            return devices
+
+
 class NetworkUnknownDeviceObjects(RubixResource):
     parser = reqparse.RequestParser()
     for attr in network_unknown_device_objects_attributes:
