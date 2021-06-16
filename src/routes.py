@@ -5,7 +5,7 @@ from src.bacnet_master.resources.device import Device, DeviceList, \
     DeviceObjectList, GetAllPoints, AddDevice, DiscoverPoints, DeleteDevices, AddAllPoints
 from src.bacnet_master.resources.network import Network, NetworkList, NetworksIds, AddNetwork
 from src.bacnet_master.resources.network_whois import Whois, UnknownDeviceObjects, \
-    UnknownReadPointPv
+    UnknownReadPointPv, NetworkAllPoints
 from src.bacnet_master.resources.point import Point, PointList, PointBACnetRead, PointBACnetWrite, PointRelease, \
     AddPoint, DeletePointList
 
@@ -31,14 +31,15 @@ api_bacnet_master.add_resource(PointList, '/points')
 
 # bacnet network calls
 api_bacnet_master.add_resource(Whois, '/b/network/whois/<string:network_uuid>')
-api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:point_uuid>')  # read point pv
-api_bacnet_master.add_resource(PointBACnetWrite,
-                               '/b/points/write/pv/<string:point_uuid>')  # write point pv
-api_bacnet_master.add_resource(PointRelease,
-                               '/b/points/write/release/<string:point_uuid>')  # release point pv
+api_bacnet_master.add_resource(NetworkAllPoints, '/b/network/discover/points/<string:network_uuid>/<string:add_points>')
+api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:point_uuid>')
+api_bacnet_master.add_resource(PointBACnetWrite, '/b/points/write/pv/<string:point_uuid>')
+api_bacnet_master.add_resource(PointRelease, '/b/points/write/release/<string:point_uuid>')
+
 
 api_bacnet_master.add_resource(DiscoverPoints, '/b/points/discover_points/<string:device_uuid>/<string:add_points>/<string:get_pv>')  # build points list
-api_bacnet_master.add_resource(AddAllPoints, '/b/points/network_point_list/add/<string:network_uuid>/<string:add_points>')  # build points list
+api_bacnet_master.add_resource(AddAllPoints, '/b/network/network_point_list/add/<string:network_uuid>/<string:add_points>')  # build points list
+# api_bacnet_master.add_resource(AddAllPointsNew, '/b/points/network_point_list/poll/<string:network_uuid>')  # build points list
 api_bacnet_master.add_resource(GetAllPoints, '/b/points/network_point_list/<string:network_uuid>/<string:timeout>')  # build points list
 api_bacnet_master.add_resource(DeviceObjectList, '/b/device/objects/<string:device_uuid>')
 api_bacnet_master.add_resource(UnknownDeviceObjects, '/b/device/unknown/objects/<string:network_uuid>')

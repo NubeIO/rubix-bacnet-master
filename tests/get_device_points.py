@@ -57,7 +57,7 @@ print(bacnet.readMultiple('1001:1', request_dict=_rpm))
 #     # print(bacnet.read("1001:1 {} {} presentValue").format(each[0], each[1]))
 #     # print(bacnet.read("192.168.15.202 {} {} presentValue".format(each[0], each[1])))
 #     print(each)
-#     print(bacnet.readMultiple("192.168.15.202 {} {} presentValue units".format(each[0], each[1])))
+#     # print(bacnet.readMultiple("192.168.15.202 {} {} presentValue units".format(each[0], each[1])))
 # or
 #  print(bacnet.readMultiple("2:5 {} {} presentValue units.format(each[0],each[1]))
 # bacnet.disconnect()

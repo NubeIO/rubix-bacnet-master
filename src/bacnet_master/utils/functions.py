@@ -199,6 +199,136 @@ class BACnetFunctions:
         }
 
     @staticmethod
+    def add_points2(device_uuid, points, device_name):
+        host = '0.0.0.0'
+        port = '1718'
+        url = f"http://{host}:{port}/api/bm/point"
+        count = 0
+        added_analog_inputs = []
+        added_analog_outputs = []
+        added_analog_values = []
+        added_binary_input = []
+        added_binary_output = []
+        added_binary_value = []
+        added_multi_state_input = []
+        added_multi_state_output = []
+        added_multi_state_value = []
+        failed_analog_inputs = []
+        failed_analog_outputs = []
+        failed_analog_values = []
+        failed_binary_input = []
+        failed_binary_output = []
+        failed_binary_value = []
+        failed_multi_state_input = []
+        failed_multi_state_output = []
+        failed_multi_state_value = []
+
+        for point_group in list(points.get("points")):
+            _point_group = points.get("points")
+            _point_group = _point_group.get(point_group)
+            if _point_group:
+                for point in _point_group:
+
+                    point_object_type = ObjType.has_value_by_name(point_group)
+                    point_name = point.get("point_name")
+                    point_object_id = point.get("point_object_id")
+                    body = {
+                        "point_name": point_name,
+                        "point_enable": True,
+                        "point_object_id": point_object_id,
+                        "point_object_type": point_object_type.name,
+                        "device_uuid": device_uuid
+                    }
+                    res = requests.put(url,
+                                       headers={'Content-Type': 'application/json'},
+                                       json=body)
+
+                    count = count + 1
+                    if res.status_code == 200:
+                        logger.info(
+                            f"PASS -> ADD POINTS: device_name:{device_name}: point_name{point_name}: status_code:{res.status_code}")
+                    else:
+                        logger.info(
+                            f"ERROR > ADD POINTS: device_name:{device_name}: point_name{point_name}: status_code:{res.status_code}, text:{res.text}")
+                    if point_object_type.name == ObjType.analogInput.name:
+                        if res.status_code == 200:
+                            added_analog_inputs.append(body)
+                        else:
+                            failed_analog_inputs.append(body)
+                    elif point_object_type.name == ObjType.analogOutput.name:
+                        if res.status_code == 200:
+                            added_analog_outputs.append(body)
+                        else:
+                            failed_analog_outputs.append(body)
+                    elif point_object_type.name == ObjType.analogValue.name:
+                        if res.status_code == 200:
+                            added_analog_values.append(body)
+                        else:
+                            failed_analog_values.append(body)
+                    elif point_object_type.name == ObjType.binaryInput.name:
+                        if res.status_code == 200:
+                            added_binary_input.append(body)
+                        else:
+                            failed_binary_input.append(body)
+                    elif point_object_type.name == ObjType.binaryOutput.name:
+                        if res.status_code == 200:
+                            added_binary_output.append(body)
+                        else:
+                            failed_binary_output.append(body)
+                    elif point_object_type.name == ObjType.binaryValue.name:
+                        if res.status_code == 200:
+                            added_binary_value.append(body)
+                        else:
+                            failed_binary_value.append(body)
+                    elif point_object_type.name == ObjType.multiStateInput.name:
+                        if res.status_code == 200:
+                            added_multi_state_input.append(body)
+                        else:
+                            failed_multi_state_input.append(body)
+                    elif point_object_type.name == ObjType.multiStateOutput.name:
+                        if res.status_code == 200:
+                            added_multi_state_output.append(body)
+                        else:
+                            failed_multi_state_output.append(body)
+                    elif point_object_type.name == ObjType.multiStateValue.name:
+                        if res.status_code == 200:
+                            added_multi_state_value.append(body)
+                        else:
+                            failed_multi_state_value.append(body)
+
+        return {
+            "discovered_points": points,
+            "discovery_errors": points.get("discovery_errors"),
+            "added_points_count": 0,
+            "added_points": {
+                "points": {
+                    "analog_inputs": added_analog_inputs,
+                    "analog_outputs": added_analog_outputs,
+                    "analog_values": added_analog_values,
+                    "binary_input": added_binary_input,
+                    "binary_output": added_binary_output,
+                    "binary_value": added_binary_value,
+                    "multi_state_input": added_multi_state_input,
+                    "multi_state_output": added_multi_state_output,
+                    "multi_state_value": added_multi_state_value
+                },
+            },
+            "existing_or_failed_points": {
+                "points": {
+                    "analog_inputs": failed_analog_inputs,
+                    "analog_outputs": failed_analog_outputs,
+                    "analog_values": failed_analog_values,
+                    "binary_input": failed_binary_input,
+                    "binary_output": failed_binary_output,
+                    "binary_value": failed_binary_value,
+                    "multi_state_input": failed_multi_state_input,
+                    "multi_state_output": failed_multi_state_output,
+                    "multi_state_value": failed_multi_state_value
+                },
+            },
+        }
+
+    @staticmethod
     def add_points(device_uuid, get_pv, add_points):
         from src.bacnet_master.models.device import BacnetDeviceModel
         from src.bacnet_master.services.device import Device as DeviceService

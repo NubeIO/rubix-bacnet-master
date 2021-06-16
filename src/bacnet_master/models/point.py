@@ -43,6 +43,7 @@ class BacnetPointModel(ModelBase):
         return cls.query.filter(BacnetPointModel.point_name == point_name).all()
 
     @classmethod
-    def existing_object_id(cls, point_object_id, point_object_type):
-        return cls.query.filter(BacnetPointModel.point_object_id == point_object_id) \
+    def existing_object_id(cls, device_uuid, point_object_id, point_object_type):
+        return cls.query.filter(BacnetPointModel.device_uuid == device_uuid) \
+            .filter((BacnetPointModel.point_object_id == point_object_id)) \
             .filter((BacnetPointModel.point_object_type == point_object_type)).all()

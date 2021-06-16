@@ -45,8 +45,22 @@ network_whois_all_attributes = {
         'type': bool,
         'required': False,
         'help': 'Set the network type is mstp'
+    },
+    'add_points': {
+        'type': bool,
+        'required': False,
+        'help': 'Set the network type is mstp'
+    },
+    'fast_poll': {
+        'type': bool,
+        'required': False,
+        'help': 'Set the network type is mstp'
+    },
+    'timeout': {
+        'type': bool,
+        'required': False,
+        'help': 'Set the network type is mstp'
     }
-
 }
 
 network_unknown_device_objects_attributes = {
