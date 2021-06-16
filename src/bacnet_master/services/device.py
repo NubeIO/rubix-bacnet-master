@@ -57,9 +57,11 @@ class Device:
         type_mstp = kwargs.get('type_mstp') or device.type_mstp or False
         device_mac = kwargs.get('device_mac') or device.device_mac
         object_instance = kwargs.get('object_instance') or device.device_object_id
-        network_number = kwargs.get('network_number') or device.network_number
+        network_number = kwargs.get('network_number')
+        if network_number != 0:
+            network_number = device.network_number
         network_number = BACnetFunctions.network_number(network_number)
-        object_type = kwargs.get('object_type') or ObjType.device.get_name
+        object_type = kwargs.get('object_type') or ObjType.device.name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
@@ -76,22 +78,32 @@ class Device:
         object_instance = kwargs.get('object_instance') or device.get("device_object_id")
         network_number = device.get("network_number")
         network_number = BACnetFunctions.network_number(network_number)
-        object_type = kwargs.get('object_type') or ObjType.device.get_name
+        object_type = kwargs.get('object_type') or ObjType.device.name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
+        build_device_address = device.get("build_device_address")
         logger.info(f"GET DEVICE OBJECT LIST  dev_url:{dev_url}, type_mstp:{type_mstp}, "
                     f"device_mac:{device_mac}, device_object_id:{object_instance}, "
                     f"network_number:{network_number}")
-        if type_mstp:
-            # print(bacnet.read('192.168.15.202/24:47808 analogOutput 1 presentValue'))  # or 85
-            # print(bacnet.read('192.168.15.202/24:47808 object_type object_instance prop'))  # or 85
-            logger.info(f"GET DEVICE OBJECT LIST - TYPE MSTP")
-            return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
-        if network_number != 0:
-            logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with network number{network_number}")
-            return f'{network_number}:{dev_url} {object_type} {object_instance} {prop}'
+        if not build_device_address:
+            if type_mstp:
+                logger.info(f"GET DEVICE OBJECT LIST - TYPE MSTP")
+                return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            if network_number != 0:
+                logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with network number{network_number}")
+                return f'{network_number}:{dev_url} {object_type} {object_instance} {prop}'
+            else:
+                logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with NO network number{network_number}")
+                return f'{dev_url} {object_type} {object_instance} {prop}'
         else:
-            logger.info(f"GET DEVICE OBJECT LIST - TYPE IP with NO network number{network_number}")
-            return f'{dev_url} {object_type} {object_instance} {prop}'
+            if type_mstp:
+                logger.info(f"BUILD DEVICE ADDRESS - TYPE MSTP: {network_number}:{device_mac}")
+                return f'{network_number}:{device_mac}'
+            if network_number != 0:
+                logger.info(f"BUILD DEVICE ADDRESS  - TYPE IP with network number:{network_number}:{dev_url}")
+                return f'{network_number}:{dev_url}'
+            else:
+                logger.info(f"BUILD DEVICE ADDRESS  - TYPE IP with dev_url:{dev_url}")
+                return f'{dev_url}'
 
     def _get_network_from_device(self, device):
         return Network.get_instance().get_network(device.network)
@@ -110,6 +122,7 @@ class Device:
         if network_instance:
             try:
                 value = network_instance.read(read)
+                value = BACnetFunctions.clean_point_value(value)
                 logger.info(f"DO POINT READ: {read}: return value:{value}")
                 return value
             except UnknownObjectError as e:
@@ -197,77 +210,106 @@ class Device:
         props = [ObjProperty.objectName.name, ObjProperty.presentValue.name]
         _list = {}
         build_points_list = {}
+
         for device in network.get("devices"):
+            print(device)
             network_uuid = device["network_uuid"]
             device_name = device["device_name"]
             device_uuid = device["device_uuid"]
+            device_mac = device["device_mac"]
             device_object_id = device["device_object_id"]
             device_ip = device["device_ip"]
+            device_mask = device["device_mask"]
+            device_port = device["device_port"]
+            network_number = device["network_number"]
+            dev_url = BACnetFunctions.build_url(device_ip=device_ip,
+                                                device_mask=device_mask, device_port=device_port)
+            address = BACnetFunctions.build_device_bac0_call(dev_url=dev_url,
+                                                             network_number=network_number,
+                                                             device_mac=device_mac
+                                                             )
+            logger.info(f"POLL ALL POINTS device address:{address}")
             point_uuid_list = []
             point_name_list = []
-            for point in device.get("points"):
-                for items in point:
-                    point_object_type = point.get("point_object_type")
-                    point_object_type = ObjType.has_value_from_string(point_object_type).get("name")
-                    point_uuid = point.get("point_uuid")
-                    point_uuid_list.append(point_uuid)
-                    point_uuid_list = list(dict.fromkeys(point_uuid_list))
-                    point_name = point.get("point_name")
-                    point_name_list.append(point_name)
-                    point_name_list = list(dict.fromkeys(point_name_list))
-                    point_object_id = point.get("point_object_id")
-                    point_key = f"{point_object_type}:{point_object_id}"
-                    _list.update({point_key: props})
-            _rpm = {'address': device_ip,
-                    'objects': _list
-                    }
-            objects_dict = _rpm.get("objects")
-            bacnet_return = ['']
-            if objects_dict:
-                bacnet_return = network_instance.readMultiple(device_ip, _rpm, timeout=timeout)
-            if bacnet_return != ['']:
-                count = 0
-                for _point in list(bacnet_return):
-                    device_points = bacnet_return.get(_point)
-                    point_uuid = point_uuid_list[count]
-                    new_point_uuid = ("uuid", point_uuid)
-                    device_points.append(new_point_uuid)
-                    point_name = None
-                    # TODO remove this and fix it (made all point names unique )
+            print(2222222222)
+            if device.get("points"):
+                print(111111)
+                print(device.get("points"))
+                for point in device.get("points"):
+                    for items in point:
+                        point_object_type = point.get("point_object_type")
+                        point_object_type = ObjType.has_value_from_string(point_object_type).get("name")
+                        point_uuid = point.get("point_uuid")
+                        point_uuid_list.append(point_uuid)
+                        point_uuid_list = list(dict.fromkeys(point_uuid_list))
+                        point_name = point.get("point_name")
+                        point_name_list.append(point_name)
+                        point_name_list = list(dict.fromkeys(point_name_list))
+                        point_object_id = point.get("point_object_id")
+                        point_key = f"{point_object_type}:{point_object_id}"
+                        _list.update({point_key: props})
+                _rpm = {'address': address,
+                        'objects': _list
+                        }
+                logger.info(f"POLL ALL POINTS rpm list:{_rpm}")
+                objects_dict = _rpm.get("objects")
+                bacnet_return = ['']
+                if objects_dict:
+                    # bacnet_return = network_instance.readMultiple(device_ip, _rpm, timeout=timeout)
                     try:
-                        point_name = point_name_list[count]
-                    except:
-                        logger.info(f"ERROR on: read_point_list_by_network")
-                    new_point_name = ("name", point_name)
-                    device_points.append(new_point_name)
-                    new_point_key = f"{_point[0]}_{_point[1]}"
-                    bacnet_return[new_point_key] = bacnet_return.pop(_point)
-                    count = count + 1
-                    for _objects in list(device_points):
-                        _device_points = device_points
-                        for iii in list(_device_points):
-                            try:
-                                obj = f"{_objects[0]}"
-                                value = f"{_objects[1]}"
-                                new_object = {obj: value}
-                                _device_points.remove(_objects)
-                                _device_points.append(new_object)
-                            except:
-                                logger.info(f"ERROR on: read_point_list_by_network")
+                        bacnet_return = network_instance.readMultiple(address, _rpm, timeout=timeout)
+                    except UnknownObjectError as e:
+                        logger.error(
+                            f"UnknownObjectError: msg: {e}")
+                    except NoResponseFromController as e:
+                        logger.error(
+                            f"NoResponseFromController: msg: {e}")
+                    except Exception as e:
+                        logger.error(f"Exception  error: {e}")
+                if bacnet_return != ['']:
+                    count = 0
+                    for _point in list(bacnet_return):
+                        device_points = bacnet_return.get(_point)
+                        point_uuid = point_uuid_list[count]
+                        new_point_uuid = ("uuid", point_uuid)
+                        device_points.append(new_point_uuid)
+                        point_name = None
+                        # TODO remove this and fix it (made all point names unique )
+                        try:
+                            point_name = point_name_list[count]
+                        except:
+                            logger.info(f"ERROR on: read_point_list_by_network")
+                        new_point_name = ("name", point_name)
+                        device_points.append(new_point_name)
+                        new_point_key = f"{_point[0]}_{_point[1]}"
+                        bacnet_return[new_point_key] = bacnet_return.pop(_point)
+                        count = count + 1
+                        for _objects in list(device_points):
+                            _device_points = device_points
+                            for iii in list(_device_points):
+                                try:
+                                    obj = f"{_objects[0]}"
+                                    value = f"{_objects[1]}"
+                                    value = BACnetFunctions.clean_active_inactive(value)
+                                    new_object = {obj: value}
+                                    _device_points.remove(_objects)
+                                    _device_points.append(new_object)
+                                except:
+                                    logger.info(f"ERROR on: read_point_list_by_network")
 
-                _dev = {
-                    device_uuid: {"deviceUUID": device_uuid, "deviceName": device_name, "deviceId": device_object_id,
-                                  "points": bacnet_return}}
-                build_points_list.update(_dev)
-                _list = {}
-            else:
-                build_points_list.update({device_uuid: "offline"})
-                build_points_list[device_uuid] = {"deviceUUID": device_uuid, "deviceName": device_name,
-                                                  "deviceId": device_object_id, "points": False}
+                    _dev = {
+                        device_uuid: {"deviceUUID": device_uuid, "deviceName": device_name, "deviceId": device_object_id,
+                                      "points": bacnet_return}}
+                    build_points_list.update(_dev)
+                    _list = {}
+                else:
+                    build_points_list.update({device_uuid: "offline"})
+                    build_points_list[device_uuid] = {"deviceUUID": device_uuid, "deviceName": device_name,
+                                                      "deviceId": device_object_id, "points": False}
         points_list = {network_uuid: build_points_list}
         return points_list
 
-    def read_point_list(self, device):
+    def read_point_list(self, device, get_pv):
         network_instance = self._get_network_from_device(device)
         if not network_instance:
             return {"network_instance": "network instance is none"}
@@ -285,23 +327,42 @@ class Device:
         obj_present_value = ObjProperty.presentValue.name
         point_types = ["analogInput", "analogOutput", "analogValue", "binaryInput", "binaryOutput",
                        "binaryValue", "multiStateInput", "multiStateOutput", "multiStateValue"]
+        discovery_errors = []
         for obj in object_list:
             object_type = obj[0]
             object_instance = obj[1]
+            point_value = None
+            point_name = None
+
             if object_type in point_types:
+                point_object_id = obj[1]
+
                 try:
-                    point_name = network_instance.read(
-                        self._common_object(device,
-                                            object_type=object_type,
-                                            object_instance=object_instance,
-                                            prop=obj_name))
-                    point_value = network_instance.read(
-                        self._common_object(device,
-                                            object_type=object_type,
-                                            object_instance=object_instance,
-                                            prop=obj_present_value))
-                    point_object_id = obj[1]
-                    point_value = BACnetFunctions.clean_point_value(point_value)
+                    try:
+                        point_name = network_instance.read(
+                            self._common_object(device,
+                                                object_type=object_type,
+                                                object_instance=object_instance,
+                                                prop=obj_name))
+                    except UnknownObjectError as e:
+                        pnt = f"{object_type}_{point_object_id}_point_name"
+                        discovery_errors.append({pnt: str(e)})
+                        logger.error(
+                            f"UnknownObjectError: {e}")
+                    try:
+                        if get_pv:
+                            point_value = network_instance.read(
+                                self._common_object(device,
+                                                    object_type=object_type,
+                                                    object_instance=object_instance,
+                                                    prop=obj_present_value))
+                            point_value = BACnetFunctions.clean_point_value(point_value)
+                    except UnknownObjectError as e:
+                        pnt = f"{object_type}_{point_object_id}_point_value"
+                        discovery_errors.append({pnt: str(e)})
+                        logger.error(
+                            f"UnknownObjectError: {e}")
+
                     if object_type == "analogInput":
                         analog_inputs.append(
                             {"point_object_id": point_object_id, "point_name": point_name, "point_value": point_value})
@@ -341,18 +402,19 @@ class Device:
             "binary_value": binary_value,
             "multi_state_input": multi_state_input,
             "multi_state_output": multi_state_output,
-            "multi_state_value": multi_state_value,
+            "multi_state_value": multi_state_value
+
         }
-        return points_list
+        return {
+            "discovery_errors": discovery_errors,
+            "points": points_list
+        }
 
     def get_object_list(self, device):
         network_instance = self._get_network_from_device(device)
         if not network_instance:
             return {"network_instance": "network instance is none"}
         read = self._common_object(device)
-        print(1111)
-        print(read)
-        print(1111)
         try:
             if network_instance:
                 return network_instance.read(read)
@@ -369,6 +431,8 @@ class Device:
         min_range = 0
         max_range = 4194302
         full_range = kwargs.get('full_range', False)
+        is_mstp = kwargs.get('is_mstp')
+        show_supported_services = kwargs.get('show_supported_services')
         if full_range:
             range_start = min_range
             range_end = max_range
@@ -383,43 +447,39 @@ class Device:
         network_number = BACnetFunctions.network_number(network_number)
         whois = kwargs.get('whois', True)
         global_broadcast = kwargs.get('global_broadcast', False)
-        who = BACnetFunctions.common_whois(range_start=range_start, range_end=range_end, network_number=network_number)
-        logger.info(f"WHOIS network_id:{network_uuid} whois -> {whois} who {who}, global_broadcast:{global_broadcast} "
-                    f", network_number:{network_number}, range_start:{range_start}, range_end:{range_end}")
+        who = BACnetFunctions.common_whois(range_start=range_start,
+                                           range_end=range_end,
+                                           network_number=network_number,
+                                           is_mstp=is_mstp)
         try:
             if whois:
-                read = network_instance.whois(who, global_broadcast)
-                _list = {}
-                for objects in read:
-                    each_device = BACnetFunctions.whois_split(objects)
-                    dev = each_device.get('device_name')
-                    _list.update({dev: each_device})
-                return _list
+                logger.info(f"WHOIS:{who}")
+                whois_response = network_instance.whois(who, global_broadcast)
+                logger.info(f"WHOIS response:{whois_response}")
+                _whois_response = BACnetFunctions.whois_is_build(whois_response, network_instance,
+                                                                 show_supported_services)
+                return _whois_response
 
             else:
                 if network_number == 0:
-                    logger.info(
-                        f"WHOIS network_id:{network_uuid} discover -> range:{range_start},{range_end} , global_broadcast: {global_broadcast}")
+                    logger.info(f"WHOIS DISCOVER without network number:{who}")
                     network_instance.discover(limits=(range_start, range_end), global_broadcast=global_broadcast)
-                    _list = {}
-                    for objects in network_instance.devices:
-                        each_device = BACnetFunctions.whois_split(objects)
-                        dev = each_device.get('device_name')
-                        _list.update({dev: each_device})
-                    return _list
+                    logger.info(f"WHOIS response:{network_instance.devices}")
+                    _whois_response = BACnetFunctions.whois_is_build(network_instance.devices, network_instance,
+                                                                     show_supported_services)
+                    return _whois_response
+
                 else:
-                    logger.info(
-                        f"WHOIS network_id:{network_uuid} discover -> network_number:{network_number} "
-                        f"range:{range_start},{range_end}, global_broadcast:{global_broadcast}")
+                    logger.info(f"WHOIS DISCOVER with network number:{who}")
                     network_instance.discover(networks=[network_number], limits=(range_start, range_end),
                                               global_broadcast=global_broadcast)
-                    _list = {}
-                    for objects in network_instance.devices:
-                        each_device = BACnetFunctions.whois_split(objects)
-                        dev = each_device.get('device_name')
-                        _list.update({dev: each_device})
-                    return _list
-        except:
+                    logger.info(f"WHOIS response:{network_instance.devices}")
+                    _whois_response = BACnetFunctions.whois_is_build(network_instance.devices, network_instance,
+                                                                     show_supported_services)
+                    return _whois_response
+
+        except Exception as e:
+            logger.error(f"WHO IS error: {e}")
             return {}
 
     def unknown_get_object_list(self, net_uuid, device):

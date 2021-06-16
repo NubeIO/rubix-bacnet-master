@@ -1,4 +1,4 @@
-from src.bacnet_master.interfaces.object_property import ObjProperty
+
 from enum import Enum
 
 
@@ -79,7 +79,7 @@ class SupportedServices(Enum):
         return d
 
     @classmethod
-    def check(self, ss):
+    def check_supported_services(self, ss):
         ss_dict = self.obj_as_false()
         ss_num = self.obj_number()
         for x in range(len(ss)):

@@ -12,7 +12,9 @@ class BacnetPointModel(ModelBase):
     point_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     point_object_id = db.Column(db.Integer(), unique=False, nullable=False)
     point_object_type = db.Column(db.Enum(ObjType), unique=False, nullable=False)
+    point_writable = db.Column(db.Boolean())
     device_uuid = db.Column(db.String, db.ForeignKey('bacnet_devices.device_uuid'))
+
 
     def __repr__(self):
         return f"Device(point_uuid = {self.device_uuid})"

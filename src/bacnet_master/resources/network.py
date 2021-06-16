@@ -1,5 +1,6 @@
 import logging
 
+from flask import jsonify
 from flask_restful import reqparse, fields, marshal_with
 from rubix_http.exceptions.exception import NotFoundException, BadDataException, InternalServerErrorException
 from rubix_http.resource import RubixResource
@@ -102,20 +103,14 @@ class Network(NetworkBase):
 class NetworkList(NetworkBase):
     @classmethod
     @marshal_with(network_all_fields, envelope="networks")
-    def get(cls):
-        return BacnetNetworkModel.find_all()
-
-    @classmethod
-    @marshal_with(network_all_fields)
-    def post(cls):
-        data = NetworkList.post_parser.parse_args()
-        network_uuid = data.pop('network_uuid')
-        if BacnetNetworkModel.find_by_network_uuid(network_uuid):
-            raise BadDataException(f"Network with network_uuid '{network_uuid}' already exists.")
-        network = Network.create_network_model_obj(network_uuid, data)
-        network.save_to_db()
-        NetworkService.get_instance().add_network(network)
-        return network
+    def get(cls, with_children):
+        with_children = Functions.to_bool(with_children)
+        if not with_children:
+            network = BacnetNetworkModel.find_all()
+            network[0].devices = []
+            return network
+        else:
+            return BacnetNetworkModel.find_all()
 
 
 class NetworksIds(RubixResource):

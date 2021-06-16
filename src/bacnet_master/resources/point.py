@@ -136,17 +136,16 @@ class PointBACnetRead(RubixResource):
         data = Point.post_parser.parse_args()
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
         get_priority = data.get('get_priority')
-        get_priority = Functions.to_bool(get_priority)
         timeout = data.get('timeout')
         if timeout:
             timeout = Functions.to_int(timeout)
-            if not isinstance(timeout, str):
-                raise InternalServerErrorException(f"Error: {timeout}")
+            if not isinstance(timeout, int):
+                raise InternalServerErrorException(f"Error: timeout must be an int {timeout}")
         if not point:
             raise NotFoundException('Points not found')
         read = DeviceService.get_instance().get_point_pv(point)
         if not isinstance(read, (int, float)):
-            raise InternalServerErrorException(f"Error: {read}")
+            raise InternalServerErrorException(f"Error on point read: {read}")
         if get_priority:
             priority = DeviceService.get_instance().get_point_priority(point)
             return {
@@ -154,8 +153,12 @@ class PointBACnetRead(RubixResource):
                 "point_object_id": point.point_object_id,
                 "point_object_type": point.point_object_type,
                 "point_uuid": point_uuid,
+                "device_uuid": point.device_uuid,
+                "point_enable": point.point_enable,
+                "point_writable": point.point_writable,
+                "get_priority": get_priority,
                 "point_value": read,
-                "priority": priority
+                "priority_array": priority
             }
         else:
             return {
@@ -163,7 +166,12 @@ class PointBACnetRead(RubixResource):
                 "point_object_id": point.point_object_id,
                 "point_object_type": point.point_object_type,
                 "point_uuid": point_uuid,
-                "point_value": read
+                "device_uuid": point.device_uuid,
+                "point_enable": point.point_enable,
+                "point_writable": point.point_writable,
+                "get_priority": get_priority,
+                "point_value": read,
+                "priority_array": {},
             }
 
 
@@ -179,8 +187,6 @@ class PointBACnetWrite(RubixResource):
         priority = int(priority)
         feedback = data.get('feedback')
         timeout = data.get('timeout')
-
-        # feedback = Functions.to_bool(feedback)
         if not isinstance(point_write_value, (int, float)):
             raise InternalServerErrorException(f"Error on point write: value must be a number {point_write_value}")
         if timeout:
@@ -196,38 +202,47 @@ class PointBACnetWrite(RubixResource):
             raise InternalServerErrorException(f"Error on point write: {write}")
         if feedback:
             read = DeviceService.get_instance().get_point_pv(point)
-            _priority = DeviceService.get_instance().get_point_priority(point)
+            priority = DeviceService.get_instance().get_point_priority(point)
             if not isinstance(read, (int, float)):
                 raise BadDataException('release: False')
             else:
                 return {
-                    "point_value": read,
                     "point_name": point.point_name,
                     "point_object_id": point.point_object_id,
                     "point_object_type": point.point_object_type,
                     "point_uuid": point_uuid,
-                    "priority_array": _priority,
-
+                    "device_uuid": point.device_uuid,
+                    "point_enable": point.point_enable,
+                    "point_writable": point.point_writable,
+                    "point_value": read,
+                    "priority_array": priority
                 }
-        return {
-            "point_value": point_write_value,
-            "point_name": point.point_name,
-            "point_object_id": point.point_object_id,
-            "point_object_type": point.point_object_type,
-            "point_uuid": point_uuid,
-            "priority_array": {},
-        }
+        else:
+            return {
+                "point_name": point.point_name,
+                "point_object_id": point.point_object_id,
+                "point_object_type": point.point_object_type,
+                "point_uuid": point_uuid,
+                "device_uuid": point.device_uuid,
+                "point_enable": point.point_enable,
+                "point_writable": point.point_writable,
+            }
 
 
 class PointRelease(RubixResource):
     @classmethod
-    def post(cls, point_uuid, priority, feedback):
+    @marshal_with(point_all_fields)
+    def post(cls, point_uuid):
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
-        value = 'null'
-        feedback = Functions.to_bool(feedback)
-        priority = int(priority)
         if not point:
             raise NotFoundException('Points not found')
+        data = Point.post_parser.parse_args()
+        priority = data.get('priority')
+        priority = int(priority)
+        feedback = data.get('feedback')
+        timeout = data.get('timeout')
+        value = 'null'
+
         if not BACnetFunctions.check_priority(priority):
             raise NotFoundException('priority must be between 1 and 16')
         write = DeviceService.get_instance().write_point_pv(point, value, priority)
@@ -240,9 +255,19 @@ class PointRelease(RubixResource):
                 raise BadDataException('release: False')
             else:
                 return {
-                    "release": True,
-                    "value": read,
-                    "priority": priority
+                    "point_value": read,
+                    "point_name": point.point_name,
+                    "point_object_id": point.point_object_id,
+                    "point_object_type": point.point_object_type,
+                    "point_uuid": point_uuid,
+                    "priority_array": priority,
+
                 }
         else:
-            return {"release": True}
+            return {
+                "point_name": point.point_name,
+                "point_object_id": point.point_object_id,
+                "point_object_type": point.point_object_type,
+                "point_uuid": point_uuid,
+                "priority_array": {},
+            }
