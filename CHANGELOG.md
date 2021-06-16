@@ -1,4 +1,7 @@
 # CHANGELOG
+## [v0.0.7](https://github.com/NubeIO/rubix-bacnet-master/tree/v0.0.7) (2020-06-17)
+- many updates, made backend more stable
+
 ## [v0.0.6](https://github.com/NubeIO/rubix-bacnet-master/tree/v0.0.6) (2020-06-15)
 - many updates, made backend more stable
 -
