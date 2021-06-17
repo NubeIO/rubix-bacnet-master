@@ -63,7 +63,13 @@ device_all_attributes = {
         'type': int,
         'required': False,
         'help': 'Used for discovering networking (set to 0 to disable)'
+    },
+    'timeout': {
+        'type': int,
+        'required': False,
+        'help': 'Used for discovering networking (set to 0 to disable)'
     }
+
 }
 device_extra_attributes = {
     'device_uuid': {

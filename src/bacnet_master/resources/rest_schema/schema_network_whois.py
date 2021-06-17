@@ -57,7 +57,7 @@ network_whois_all_attributes = {
         'help': 'Set the network type is mstp'
     },
     'timeout': {
-        'type': bool,
+        'type': int,
         'required': False,
         'help': 'Set the network type is mstp'
     }

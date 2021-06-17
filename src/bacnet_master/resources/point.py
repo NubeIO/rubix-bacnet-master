@@ -40,14 +40,15 @@ class AddPoint(PointBase):
     @classmethod
     @marshal_with(point_all_fields)
     def put(cls):
-        # TODO maybe need to add in check if point name alreay exists (The point name is used in the network poll points and throws an error if the name exists twice)
+        # TODO maybe need to add in check if point name alreay exists
         point_uuid = Functions.make_uuid()
         data = Point.parser.parse_args()
         point_name = data.get("point_name")
         point_object_id = data.get("point_object_id")
         point_object_type = data.get("point_object_type")
         device_uuid = data.get("device_uuid")
-        check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid, point_object_id, point_object_type)
+        check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid, point_object_id,
+                                                                                point_object_type)
         if check_object_id:
             raise NotFoundException(f"Point same Object Type and Object id exists id:{point_object_id}")
         check_name: BacnetPointModel = BacnetPointModel.existing_object_name(point_name)
@@ -82,10 +83,29 @@ class Point(PointBase):
     @classmethod
     @marshal_with(point_all_fields)
     def patch(cls, point_uuid):
-        data = Point.parser_patch.parse_args()
         point: BacnetPointModel = BacnetPointModel.find_by_point_uuid(point_uuid)
         if point is None:
-            raise NotFoundException("Point not found")
+            raise NotFoundException(f"Point not found {point_uuid}")
+        data = Point.parser_patch.parse_args()
+        point_name = data.get("point_name")
+        point_object_id = data.get("point_object_id")
+        point_object_type = data.get("point_object_type")
+        device_uuid = data.get("device_uuid")
+        check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid,
+                                                                                point_object_id,
+                                                                                point_object_type)
+        if isinstance(check_object_id, list):
+            for i in check_object_id:
+                if not point_uuid == i.point_uuid:
+                    raise NotFoundException(f"Point same Object Type and Object id exists id:{point_object_id}")
+
+        check_name: BacnetPointModel = BacnetPointModel.existing_object_name(point_name)
+        if check_name:
+            if isinstance(check_name, list):
+                for i in check_name:
+                    if not point_uuid == i.point_uuid:
+                        raise NotFoundException(f"Point name with that device exists point_name:{point_name}")
+
         point.update(**data)
         return point
 
