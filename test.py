@@ -32,6 +32,21 @@ print(ip2bin("192.168.15.202"))
 print(ip2hex("192.168.15.202"))
 
 
-aa = {'analog_inputs': [], 'analog_outputs': [], 'analog_values': [], 'binary_input': [], 'binary_output': [], 'binary_value': [], 'multi_state_input': [], 'multi_state_output': [], 'multi_state_value': [{'point_object_id': 0, 'point_name': None, 'point_value': None}, {'point_object_id': 1, 'point_name': '0:capture command', 'point_value': 1}, {'point_object_id': 2, 'point_name': '1:capture buf_size', 'point_value': 1}, {'point_object_id': 3, 'point_name': '1:capture command', 'point_value': 1}]}
+aa = {
+    "points_IO-30S-BM_ec799194f1df9502": {
+        "discovered_points": {
+            "analog_inputs": [
+                {
+                    "point_object_id": 1,
+                    "point_name": "AI 1 222222",
+                    "point_value": "null"
+                }
+                ]
+        }
+    }
+}
 
-print(aa.get('multi_state_value'))
+a = {}
+for key, value in aa.items():
+    a.update(value)
+print(a)
