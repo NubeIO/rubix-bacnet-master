@@ -1,7 +1,5 @@
 import logging
-
 import requests
-
 from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.interfaces.device_supported_services import SupportedServices
 from src.bacnet_master.interfaces.object_property import ObjProperty

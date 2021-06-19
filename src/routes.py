@@ -39,15 +39,6 @@ api_bacnet_master.add_resource(PointBACnetWrite, '/b/points/write/pv/<string:poi
 api_bacnet_master.add_resource(PointRelease, '/b/points/write/release/<string:point_uuid>')
 
 
-# api_bacnet_master.add_resource(DiscoverPoints,
-# '/b/points/discover_points/<string:device_uuid>/<string:add_points>/<string:get_pv>')
-# api_bacnet_master.add_resource(AddAllPoints,
-# '/b/network/network_point_list/add/<string:network_uuid>/<string:add_points>') api_bacnet_master.add_resource(
-# AddAllPointsNew, '/b/points/network_point_list/poll/<string:network_uuid>') api_bacnet_master.add_resource(
-# GetAllPoints, '/b/points/network_point_list/<string:network_uuid>/<string:timeout>')
-# api_bacnet_master.add_resource(UnknownDeviceObjects, '/b/device/unknown/objects/<string:network_uuid>')
-# api_bacnet_master.add_resource(UnknownReadPointPv, '/b/point/unknown/point_pv/<string:network_uuid>')
-
 bp_system = Blueprint('system', __name__, url_prefix='/api/system')
 api_system = Api(bp_system)
 api_system.add_resource(Ping, '/ping')

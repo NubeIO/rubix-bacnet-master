@@ -32,21 +32,15 @@ print(ip2bin("192.168.15.202"))
 print(ip2hex("192.168.15.202"))
 
 
-aa = {
-    "points_IO-30S-BM_ec799194f1df9502": {
-        "discovered_points": {
-            "analog_inputs": [
-                {
-                    "point_object_id": 1,
-                    "point_name": "AI 1 222222",
-                    "point_value": "null"
-                }
-                ]
-        }
-    }
-}
+aa = {'address': '1001:1', 'objects': (0, {'analogInput:1': ['objectName', 'presentValue'], 'analogInput:2': ['objectName', 'presentValue'], 'analogInput:3': ['objectName', 'presentValue'], 'analogInput:4': ['objectName', 'presentValue'], 'analogInput:5': ['objectName', 'presentValue']})}
 
-a = {}
-for key, value in aa.items():
-    a.update(value)
-print(a)
+for i in aa:
+    print(i)
+
+# for key, value in enumerate(aa):
+#     _rpm = {'address': '1001:1',
+#             "objects": value
+#             }
+#
+#     print(_rpm)
+

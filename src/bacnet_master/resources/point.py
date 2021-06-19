@@ -168,7 +168,15 @@ class PointBACnetRead(RubixResource):
         if not isinstance(read, (int, float)):
             raise BadDataException(f"Error on point read: {read}")
         if get_priority:
-            priority = DeviceService.get_instance().get_point_priority(point)
+            priority = DeviceService.get_instance().get_point_priority_errors(point)
+            print(1111)
+            print(priority.get("value"))
+            print(priority.get("error"))
+            print(priority.get("error"))
+            print(1111)
+            if not priority.get("value"):
+                raise BadDataException(f"Error on point read: {priority}")
+            print(priority)
             return {
                 "point_name": point.point_name,
                 "point_object_id": point.point_object_id,
@@ -179,7 +187,7 @@ class PointBACnetRead(RubixResource):
                 "point_writable": point.point_writable,
                 "get_priority": get_priority,
                 "point_value": read,
-                "priority_array": priority
+                "priority_array": priority.get("value")
             }
         else:
             return {
