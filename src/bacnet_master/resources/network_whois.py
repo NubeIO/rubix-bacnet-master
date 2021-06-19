@@ -50,13 +50,13 @@ class Whois(NetworkWhois):
                                         range_end=range_end,
                                         is_mstp=is_mstp,
                                         show_supported_services=show_supported_services)
+
         if not add_devices:
             return {
                 "discovered_devices": devices,
                 "added_devices_count": 0,
                 "added_devices": {},
                 "existing_or_failed_to_add": {},
-
             }
 
         elif add_devices:
@@ -114,14 +114,13 @@ def _discover_points(**kwargs):
                                                                get_point_value,
                                                                get_point_priority=get_point_priority,
                                                                timeout=timeout)
-        print(9999)
-        print(_device_name)
-        print(points)
-        print(9999)
+
+        if not isinstance(points, dict):
+            if not network_uuid:
+                raise NotFoundException(points)
         count = count + 1
         network_devices.update({"devices_found": count})
         _device_key = f"{_device_name}_{_device_uuid}"
-        # _points_key = f"points_{_device_name}_{device_uuid}"
         network_devices.update({_device_key: points})
         if add_points:
             _points = BACnetFunctions.add_points(_device_uuid, points, _device_name)
@@ -199,9 +198,31 @@ def _poll_points(**kwargs):
             timeout = BACnetFunctions.validate_timeout(kwargs.get('timeout'))
             return DeviceService.get_instance().poll_points(device, timeout=timeout)
 
-    # for point in _points:
-    #     device_uuid = point.device_uuid
-    #     point_uuid = point.point_uuid
+
+def _poll_points_rpm(**kwargs):
+    _devices = None
+    _points = None
+    network_uuid = kwargs.get('network_uuid')
+    if network_uuid:
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not network:
+            raise NotFoundException("Network not found")
+        if not network.devices:
+            raise NotFoundException(f"Not devices are are added to the system network uuid:{network_uuid}")
+        else:
+            _devices = network.devices
+
+    device_uuid = kwargs.get('device_uuid')
+    if device_uuid:
+        device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
+        if not device:
+            raise NotFoundException(f"No device with that ID is added {device_uuid}")
+        if not device.points:
+            raise NotFoundException(f"Not points are added for this device:{network_uuid}")
+        else:
+            _points = device
+            timeout = BACnetFunctions.validate_timeout(kwargs.get('timeout'))
+            return DeviceService.get_instance().poll_points_rpm(device, timeout=timeout)
 
 
 class DevicePollAllPoints(RubixResource):
@@ -213,76 +234,8 @@ class DevicePollAllPoints(RubixResource):
         add_points = data.get('add_points')
         fast_poll = data.get('fast_poll')
         timeout = BACnetFunctions.validate_timeout(data.get('timeout'))
-        return _poll_points(device_uuid=device_uuid,
-                            fast_poll=fast_poll,
-                            add_points=add_points,
-                            timeout=timeout
-                            )
-
-# class NetworkUnknownDeviceObjects(RubixResource):
-#     parser = reqparse.RequestParser()
-#     for attr in network_unknown_device_objects_attributes:
-#         parser.add_argument(attr,
-#                             type=network_unknown_device_objects_attributes[attr]['type'],
-#                             required=network_unknown_device_objects_attributes[attr].get('required', None),
-#                             help=network_unknown_device_objects_attributes[attr].get('help', None),
-#                             store_missing=False)
-
-
-# class UnknownDeviceObjects(NetworkUnknownDeviceObjects):
-#     @classmethod
-#     def post(cls, network_uuid):
-#         data = UnknownDeviceObjects.parser.parse_args()
-#         device_object_id = data['device_object_id']
-#         device_ip = data['device_ip']
-#         device_mac = data['device_mac']
-#         device_mask = data['device_mask']
-#         device_port = data['device_port']
-#         type_mstp = data['type_mstp']
-#         network_number = data['network_number']
-#         device = {
-#             "device_object_id": device_object_id,
-#             "device_ip": device_ip,
-#             "device_mac": device_mac,
-#             "device_mask": device_mask,
-#             "device_port": device_port,
-#             "type_mstp": type_mstp,
-#             "network_number": network_number
-#         }
-#         return DeviceService().unknown_get_object_list(network_uuid, device)
-
-
-# class PointUnknownReadPointPv(RubixResource):
-#     parser = reqparse.RequestParser()
-#     for attr in point_unknown_read_point_pv_attributes:
-#         parser.add_argument(attr,
-#                             type=point_unknown_read_point_pv_attributes[attr]['type'],
-#                             required=point_unknown_read_point_pv_attributes[attr].get('required', None),
-#                             help=point_unknown_read_point_pv_attributes[attr].get('help', None),
-#                             store_missing=False)
-
-# class UnknownReadPointPv(PointUnknownReadPointPv):
-#     @classmethod
-#     def post(cls, network_uuid):
-#         data = UnknownReadPointPv.parser.parse_args()
-#         device_object_id = data['device_object_id']
-#         device_ip = data['device_ip']
-#         device_mac = data['device_mac']
-#         device_mask = data['device_mask']
-#         device_port = data['device_port']
-#         type_mstp = data['type_mstp']
-#         network_number = data['network_number']
-#         point_object_id = data['point_object_id']
-#         point_object_type = data['point_object_type']
-#         device = {
-#             "device_object_id": device_object_id,
-#             "device_ip": device_ip,
-#             "device_mac": device_mac,
-#             "device_mask": device_mask,
-#             "device_port": device_port,
-#             "type_mstp": type_mstp,
-#             "network_number": network_number,
-#             "point_object_id": point_object_id,
-#             "point_object_type": point_object_type
-#         }
-#         return DeviceService().unknown_get_point_pv(network_uuid, device)
+        return _poll_points_rpm(device_uuid=device_uuid,
+                                fast_poll=fast_poll,
+                                add_points=add_points,
+                                timeout=timeout
+                                )

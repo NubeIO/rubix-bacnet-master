@@ -1,0 +1,3 @@
+class BACnetNetworkInstanceError(Exception):
+    pass
+

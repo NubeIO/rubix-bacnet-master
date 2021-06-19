@@ -2,7 +2,11 @@ import time
 
 import BAC0
 
-bacnet = BAC0.lite()
+bacnet = BAC0.lite("192.168.15.102")
+# bacnet.write(f'1001:46 analogValue 5 presentValue null - 16')
+print(bacnet.read(f'192.168.15.202 analogOutput 1 presentValue'))
+print(bacnet.write(f'192.168.15.202 analogValue 5 presentValue null - 15'))
+
 
 # Write null @ 16
 # address = '192.168.15.202'
@@ -11,7 +15,7 @@ bacnet = BAC0.lite()
 # value = 22.2  # write Null
 # bacnet.write('address object object_instance property value - priority')
 # 1001:46 analogOutput 1 85 1 - 16
-bacnet.write(f'1001:46 analogOutput 2 presentValue 1 - 16')
+# bacnet.write(f'1001:46 analogOutput 2 presentValue 1 - 16')
 
 # read_vals = f'{address} {object_type} {object_instance} 85 '
 # time.sleep(1)
