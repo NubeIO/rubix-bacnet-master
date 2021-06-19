@@ -4,7 +4,7 @@ from flask_restful import Api
 from src.bacnet_master.resources.device import Device, DeviceList, \
     AddDevice, DeleteDevices, DeviceObjectList
 from src.bacnet_master.resources.network import Network, NetworkList, NetworksIds, AddNetwork
-from src.bacnet_master.resources.network_whois import Whois, NetworkAllPoints, DeviceAllPoints, DevicePollAllPoints
+from src.bacnet_master.resources.network_whois import Whois, DeviceAllPoints
 from src.bacnet_master.resources.point import Point, PointList, PointBACnetRead, PointBACnetWrite, PointRelease, \
     AddPoint, DeletePointList
 
@@ -30,9 +30,7 @@ api_bacnet_master.add_resource(PointList, '/points')
 
 # bacnet network calls
 api_bacnet_master.add_resource(Whois, '/b/network/whois/<string:network_uuid>')
-api_bacnet_master.add_resource(NetworkAllPoints, '/b/network/discover/points/<string:network_uuid>')
 api_bacnet_master.add_resource(DeviceAllPoints, '/b/device/discover/points/<string:device_uuid>')
-api_bacnet_master.add_resource(DevicePollAllPoints, '/b/device/poll/points/<string:device_uuid>')
 api_bacnet_master.add_resource(DeviceObjectList, '/b/device/objects/<string:device_uuid>')
 api_bacnet_master.add_resource(PointBACnetRead, '/b/points/read/pv/<string:point_uuid>')
 api_bacnet_master.add_resource(PointBACnetWrite, '/b/points/write/pv/<string:point_uuid>')

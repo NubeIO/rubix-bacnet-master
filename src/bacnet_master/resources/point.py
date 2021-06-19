@@ -38,11 +38,10 @@ class AddPoint(PointBase):
                                   store_missing=False)
 
     @classmethod
-    @marshal_with(point_all_fields)
-    def put(cls):
-        # TODO maybe need to add in check if point name alreay exists
+    def add_point(cls, data):
+        print(data)
+        print(11111)
         point_uuid = Functions.make_uuid()
-        data = Point.parser.parse_args()
         point_name = data.get("point_name")
         point_object_id = data.get("point_object_id")
         point_object_type = data.get("point_object_type")
@@ -61,6 +60,12 @@ class AddPoint(PointBase):
         else:
             point.update(**data)
         return point
+
+    @classmethod
+    @marshal_with(point_all_fields)
+    def put(cls):
+        data = Point.parser.parse_args()
+        return cls.add_point(data)
 
 
 class Point(PointBase):
