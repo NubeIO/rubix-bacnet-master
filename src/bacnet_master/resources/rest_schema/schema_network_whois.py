@@ -51,7 +51,7 @@ network_whois_all_attributes = {
         'required': False,
         'help': 'Set the network type is mstp'
     },
-    'fast_poll': {
+    'discovery': {
         'type': bool,
         'required': False,
         'help': 'Set the network type is mstp'

@@ -73,57 +73,32 @@ def _poll_points_rpm(**kwargs):
     network_uuid = kwargs.get('network_uuid')
     add_points = kwargs.get('add_points')
     device_uuid = kwargs.get('device_uuid')
+    discovery = kwargs.get('discovery')
     timeout = BACnetFunctions.validate_timeout(kwargs.get('timeout'))
     if device_uuid:
         device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if not device:
             raise NotFoundException(f"No device with that ID is added {device_uuid}")
-        if not device.points:
-            raise NotFoundException(f"Not points are added for this device:{network_uuid}")
-        if add_points:
+        if discovery:
             object_list = DeviceService.get_instance().build_point_list_new(device)
             points = DeviceService.get_instance().poll_points_rpm(device, object_list=object_list, timeout=timeout)
-            print(22222)
-            print(points)
-            print(22222)
             points_list = points.get("discovered_points")
             points_list = points_list.get("points")
             for i in points_list:
-                print(55555)
                 _points = points_list.get(i)
-                print(i)
-                print(type(_points))
                 for point in _points:
-                    print(666)
-                    print(point)
-                    print(6666)
                     point_name = point.get("point_name")
                     point_object_id = point.get("point_object_id")
-                    # point_object_type = point.get(i)
-                    print(1111)
-                    print(i)
-
-                    print(1111)
-                    # print("point_object_type1", point_object_type)
-                    point_object_type = ObjType.search(i)
-                    print("point_object_type2", point_object_type)
-                    point_object_type = ObjType.has_value_from_string(point_object_type).get('value')
-                    print("point_object_type3", point_object_type)
-
-                    print(6666)
-                    print(point_object_type)
-                    print(6666)
+                    point_object_type = ObjType.from_underscore(i)
                     data = {'point_name': point_name, 'point_enable': True, 'point_object_id': point_object_id,
                             'point_object_type': point_object_type, 'device_uuid': device_uuid}
-                    #
-                    # print(aa)
-                    # print(6666)
-                # print(type(_points))
-                # print(_points)
 
-                    AddPoint.add_point(data)
+                    if add_points:
+                        AddPoint.add_point(data)
             return points
         else:
+            if not device.points:
+                raise NotFoundException(f"Not points are added for this device:{device_uuid}")
             _points = device
             points = DeviceService.get_instance().poll_points_rpm(device, timeout=timeout)
             return points
@@ -136,10 +111,10 @@ class DeviceAllPoints(RubixResource):
             raise NotFoundException(f"device uuid is needed")
         data = Whois.parser.parse_args()
         add_points = data.get('add_points')
-        fast_poll = data.get('fast_poll')
+        discovery = data.get('discovery')
         timeout = BACnetFunctions.validate_timeout(data.get('timeout'))
         return _poll_points_rpm(device_uuid=device_uuid,
-                                fast_poll=fast_poll,
+                                discovery=discovery,
                                 add_points=add_points,
                                 timeout=timeout
                                 )

@@ -82,7 +82,7 @@ class ObjType(Enum):
         return d
 
     @classmethod
-    def search(cls, lookup: str) -> str:
+    def from_underscore(cls, lookup: str) -> str:
         """
         :param lookup:  binary_input
         :return: binaryInput
@@ -94,8 +94,3 @@ class ObjType(Enum):
 
 
 
-a ="analog_input"
-point_object_type = ObjType.search(a)
-print(point_object_type)
-# point_object_type = ObjType.has_value_from_string(point_object_type)
-# print(point_object_type.get('value'))
