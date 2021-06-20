@@ -1,6 +1,6 @@
 import BAC0
 
-bacnet = BAC0.lite('192.168.15.102/24:47808')
+bacnet = BAC0.lite('192.168.15.104/24:47808')
 # print(bacnet.readMultiple('192.168.15.12 device 260001 all'))
 # print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 all'))
 # print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 85'))
@@ -8,8 +8,9 @@ bacnet = BAC0.lite('192.168.15.102/24:47808')
 
 # objectList
 
+
 #
-print(bacnet.read('1001:1 device 1 objectList'))
+print(bacnet.read('1001:1 device 202 objectList'))
 # # Write null @ 16
 # address = '192.168.15.196'
 # object_type = 'device'

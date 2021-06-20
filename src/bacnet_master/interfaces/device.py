@@ -31,6 +31,7 @@ class ObjType(Enum):
 
     @classmethod
     def has_value(cls, value):
+        print(cls.__members__)
         if value in cls.__members__:
             return value
 
@@ -70,7 +71,7 @@ class ObjType(Enum):
     def all_obj(cls) -> dict:
         d = {}
         for i in ObjType:
-            d[i.value[2]] = i.value[1]
+            d[i.value[2]] = i.value[0]
         return d
 
     @classmethod
@@ -79,3 +80,17 @@ class ObjType(Enum):
         for i in ObjType:
             d[i.value[2]] = False
         return d
+
+    @classmethod
+    def from_underscore(cls, lookup: str) -> str:
+        """
+        :param lookup:  binary_input
+        :return: binaryInput
+        """
+        for key, value in cls.all_obj().items():
+            for v in value:
+                if lookup in value:
+                    return key
+
+
+
