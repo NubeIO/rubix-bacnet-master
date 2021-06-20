@@ -65,5 +65,4 @@ class Polling:
 
     @staticmethod
     def run():
-        t1 = threading.Thread(target=Polling.test2)
-        t1.start()
+        Polling.test2()

@@ -34,7 +34,7 @@ class Background:
         logger.info("Running Background Task...")
         if setting.mqtt.enabled:
             FlaskThread(target=MqttClient().start, daemon=True, kwargs={'config': setting.mqtt}).start()
-            Polling.run()
+            FlaskThread(target=Polling.run, daemon=True).start()
 
         if setting.bacnet.master_enabled:
             Network.get_instance().start()
