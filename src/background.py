@@ -3,6 +3,7 @@ from threading import Thread
 
 from flask import current_app
 
+from .polling.polling import Polling
 from .setting import AppSetting
 
 logger = logging.getLogger(__name__)
@@ -33,6 +34,7 @@ class Background:
         logger.info("Running Background Task...")
         if setting.mqtt.enabled:
             FlaskThread(target=MqttClient().start, daemon=True, kwargs={'config': setting.mqtt}).start()
+            Polling.run()
 
         if setting.bacnet.master_enabled:
             Network.get_instance().start()

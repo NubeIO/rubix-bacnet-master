@@ -74,8 +74,6 @@ class Network(NetworkBase):
             raise NotFoundException("Network not found")
         return network
 
-
-
     @classmethod
     @marshal_with(network_all_fields)
     def patch(cls, network_uuid):

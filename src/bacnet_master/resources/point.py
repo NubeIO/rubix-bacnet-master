@@ -39,6 +39,7 @@ class AddPoint(PointBase):
 
     @classmethod
     def add_point(cls, data):
+        print(data)
         point_uuid = Functions.make_uuid()
         point_name = data.get("point_name")
         point_object_id = data.get("point_object_id")

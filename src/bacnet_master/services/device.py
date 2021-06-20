@@ -6,6 +6,7 @@ from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.interfaces.object_property import ObjProperty
 from src.bacnet_master.models.device import BacnetDeviceModel
 from src.bacnet_master.models.network import BacnetNetworkModel
+
 from src.bacnet_master.services.network import Network
 from src.bacnet_master.utils.functions import BACnetFunctions
 
@@ -30,6 +31,12 @@ class Device:
 
     def get_dev_url(self, device):
         return f"{device.device_ip}:{device.device_port}"
+
+    @staticmethod
+    def test(uuid):
+        from src.bacnet_master.resources.point import AddPoint
+        return AddPoint.add_point(uuid)
+
 
     def _common_point(self, point, device, **kwargs):
         dev_url = kwargs.get('dev_url') or BACnetFunctions.build_url(device)
