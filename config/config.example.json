@@ -1,8 +1,10 @@
 {
   "bacnet": {
-    "enabled": true,
-    "master_enabled": false,
-    "ip": "192.168.0.100",
+    "enabled": false,
+    "master_enabled": true,
+    "polling_enable": true,
+    "polling_time_in_seconds": 5,
+    "ip": "192.168.15.10",
     "port": 47808,
     "device_id": 2508,
     "local_obj_name": "Nube-IO",
@@ -29,5 +31,20 @@
     "topic": "rubix/bacnet_master/points",
     "publish_debug": true,
     "debug_topic": "rubix/bacnet_master/debug"
+  },
+  "mqtt_rest_bridge_listener": {
+    "enabled": false,
+    "name": "bacnet-mqtt-rest-bridge-listener",
+    "host": "0.0.0.0",
+    "port": 1883,
+    "authentication": false,
+    "username": "username",
+    "password": "password",
+    "keepalive": 60,
+    "qos": 1,
+    "retain": false,
+    "attempt_reconnect_on_unavailable": true,
+    "attempt_reconnect_secs": 5,
+    "timeout": 10
   }
 }
