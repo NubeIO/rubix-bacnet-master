@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 class Network:
     __instance = None
 
+
     @staticmethod
     def get_instance():
         if not Network.__instance:
@@ -61,5 +62,4 @@ class Network:
         network_device_object_id = network.network_device_object_id
         network_device_name = network.network_device_name
         out = self.networks.get(net_url, {}).get(network_device_object_id, {}).get(network_device_name)
-        logger.info(f"do whois with network{out}")
         return out

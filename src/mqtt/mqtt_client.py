@@ -1,3 +1,4 @@
+import json
 import logging
 
 from registry.registry import RubixRegistry
@@ -27,9 +28,14 @@ class MqttClient(MqttClientBase, metaclass=Singleton):
         return super().config if isinstance(super().config, MqttSetting) else MqttSetting()
 
     @allow_only_on_prefix
-    def publish_value(self, topic_suffix: tuple, payload: str):
+    def publish_value(self, topic_suffix: tuple, payload):
+        _payload = None
+        if isinstance(payload, dict):
+            _payload = json.dumps(payload)
+        else:
+            _payload = payload
         if self.config.publish_value:
-            self.__publish_mqtt_value(self.make_topic((self.config.topic,) + topic_suffix), payload)
+            self.__publish_mqtt_value(self.make_topic((self.config.topic,) + topic_suffix), _payload)
 
     @allow_only_on_prefix
     def publish_debug(self, payload: str):

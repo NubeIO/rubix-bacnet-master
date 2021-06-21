@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 class BacnetDeviceModel(ModelBase):
     __tablename__ = 'bacnet_devices'
-    device_name = db.Column(db.String(80), unique=False, nullable=False)
+    device_name = db.Column(db.String(100), unique=True, nullable=False)
     device_enable = db.Column(db.Boolean())
     device_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     device_mac = db.Column(db.Integer(), unique=False, nullable=False)
     device_object_id = db.Column(db.Integer(), unique=False, nullable=False)
-    device_ip = db.Column(db.String(80), unique=False, nullable=False)
+    device_ip = db.Column(db.String(100), unique=False, nullable=False)
     device_mask = db.Column(db.Integer(), nullable=False)
     device_port = db.Column(db.Integer(), nullable=False)
     type_mstp = db.Column(db.Boolean())
@@ -28,7 +28,7 @@ class BacnetDeviceModel(ModelBase):
     points = db.relationship('BacnetPointModel', cascade="all,delete", backref='points', lazy=True)
 
     def __repr__(self):
-        return f"Device(device_uuid = {self.network_uuid})"
+        return f"Device(network_uuid = {self.network_uuid})"
 
     @classmethod
     def delete_all_device_by_network(cls, network_uuid):

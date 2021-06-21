@@ -37,7 +37,6 @@ class Device:
         from src.bacnet_master.resources.point import AddPoint
         return AddPoint.add_point(uuid)
 
-
     def _common_point(self, point, device, **kwargs):
         dev_url = kwargs.get('dev_url') or BACnetFunctions.build_url(device)
         network_number = kwargs.get('network_number') or device.network_number
@@ -301,7 +300,7 @@ class Device:
                 "error": e
             }
 
-    def poll_points_rpm(self, device, **kwargs):
+    def poll_points_list(self, device, **kwargs):
         network_instance = self._get_network_from_device(device)
         if not network_instance:
             return {"network_instance": "network instance is none"}
@@ -320,6 +319,8 @@ class Device:
         multi_state_output = []
         multi_state_value = []
         address = self.build_device_address(device)
+        device_name = device.device_name
+
         if object_list:
             for obj in object_list:
                 object_type = obj[0]
@@ -355,35 +356,39 @@ class Device:
             _rpm = {'address': address,
                     "objects": value
                     }
-            r = network_instance.readMultiple('1001:1', request_dict=_rpm, timeout=timeout)
-            for _key, rpm_points in enumerate(r):
-                _pnt = r[rpm_points]
-                object_type = rpm_points[0]
-                point_object_id = rpm_points[1]
-                key = f"{object_type}:{point_object_id}"
-                if object_list:
-                    object_name = _pnt[0][1]
-                else:
-                    object_name = points_list_name.get(key)
-                present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
-                if object_type == ObjType.analogInput.name:  # AI
-                    analog_input.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.analogOutput.name:  # AO
-                    analog_output.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.analogValue.name:  # AV
-                    analog_value.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.binaryInput.name:  # BI
-                    binary_input.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.binaryOutput.name:  # BO
-                    binary_output.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.binaryValue.name:  # BV
-                    binary_value.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.multiStateInput.name:  # MI
-                    multi_state_input.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.multiStateOutput.name:  # MO
-                    multi_state_output.append(payload([point_object_id, object_name, present_value]))
-                elif object_type == ObjType.multiStateValue.name:  # MV
-                    multi_state_value.append(payload([point_object_id, object_name, present_value]))
+            r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
+            if isinstance(r, str):
+                logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
+            if isinstance(r, dict):
+                logger.info(f"POLL-POINTS readMultiple: address:{address} device_name:{device_name}")
+                for _key, rpm_points in enumerate(r):
+                    _pnt = r[rpm_points]
+                    object_type = rpm_points[0]
+                    point_object_id = rpm_points[1]
+                    key = f"{object_type}:{point_object_id}"
+                    if object_list:
+                        object_name = _pnt[0][1]
+                    else:
+                        object_name = points_list_name.get(key)
+                    present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
+                    if object_type == ObjType.analogInput.name:  # AI
+                        analog_input.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.analogOutput.name:  # AO
+                        analog_output.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.analogValue.name:  # AV
+                        analog_value.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryInput.name:  # BI
+                        binary_input.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryOutput.name:  # BO
+                        binary_output.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryValue.name:  # BV
+                        binary_value.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateInput.name:  # MI
+                        multi_state_input.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateOutput.name:  # MO
+                        multi_state_output.append(payload([point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateValue.name:  # MV
+                        multi_state_value.append(payload([point_object_id, object_name, present_value]))
         return {
             "discovered_points": {
                 "points": {
@@ -398,8 +403,9 @@ class Device:
                     "multi_state_value": multi_state_value,
                 }
             },
-            "discovery_errors": "discovery_errors",
+            "discovery_errors": {},
             "added_points_count": 0,
+
             "added_points": {},
             "existing_or_failed_points": {}
         }

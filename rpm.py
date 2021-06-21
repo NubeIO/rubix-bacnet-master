@@ -29,11 +29,7 @@ def read_property_multiple(network, address, obj: BACnetObject,
             str(obj.id),
             *[prop.name for prop in properties]
         ])
-        print(request)
         response = network.readMultiple(request)
-        print(11)
-        print(response)
-        print(11)
         # check values for None and empty strings
         values = 22
         # for i, value in enumerate(response):

@@ -67,6 +67,17 @@ class Network(NetworkBase):
                                   store_missing=False)
 
     @classmethod
+    def get_network(cls, network_uuid):
+        network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        if not network:
+            raise NotFoundException("Network not found")
+        return network
+
+    @classmethod
+    def get_networks(cls):
+        return BacnetNetworkModel.find_all()
+
+    @classmethod
     @marshal_with(network_all_fields)
     def get(cls, network_uuid):
         network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
@@ -105,8 +116,9 @@ class NetworkList(NetworkBase):
         with_children = Functions.to_bool(with_children)
         if not with_children:
             network = BacnetNetworkModel.find_all()
-            network[0].devices = []
-            return network
+            if network:
+                network[0].devices = []
+                return network
         else:
             return BacnetNetworkModel.find_all()
 

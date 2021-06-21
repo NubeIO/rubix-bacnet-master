@@ -31,7 +31,6 @@ class ObjType(Enum):
 
     @classmethod
     def has_value(cls, value):
-        print(cls.__members__)
         if value in cls.__members__:
             return value
 

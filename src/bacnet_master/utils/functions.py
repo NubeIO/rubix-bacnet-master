@@ -342,7 +342,6 @@ class BACnetFunctions:
                 },
             },
         }
-        print(out_dict)
         return out_dict
 
     @staticmethod

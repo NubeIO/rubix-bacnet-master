@@ -7,7 +7,7 @@ from src.bacnet_master.models.model_base import ModelBase
 
 class BacnetPointModel(ModelBase):
     __tablename__ = 'bacnet_points'
-    point_name = db.Column(db.String(80), unique=False, nullable=False)
+    point_name = db.Column(db.String(100), unique=True, nullable=False)
     point_enable = db.Column(db.Boolean())
     point_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     point_object_id = db.Column(db.Integer(), unique=False, nullable=False)
@@ -17,7 +17,7 @@ class BacnetPointModel(ModelBase):
 
 
     def __repr__(self):
-        return f"Device(point_uuid = {self.device_uuid})"
+        return f"Device(device_uuid = {self.device_uuid})"
 
     @classmethod
     def delete_all_points_by_device(cls, device_uuid):

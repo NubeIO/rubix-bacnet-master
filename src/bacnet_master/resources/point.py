@@ -39,7 +39,6 @@ class AddPoint(PointBase):
 
     @classmethod
     def add_point(cls, data):
-        print(data)
         point_uuid = Functions.make_uuid()
         point_name = data.get("point_name")
         point_object_id = data.get("point_object_id")
@@ -173,14 +172,8 @@ class PointBACnetRead(RubixResource):
             raise BadDataException(f"Error on point read: {read}")
         if get_priority:
             priority = DeviceService.get_instance().get_point_priority_errors(point)
-            print(1111)
-            print(priority.get("value"))
-            print(priority.get("error"))
-            print(priority.get("error"))
-            print(1111)
             if not priority.get("value"):
                 raise BadDataException(f"Error on point read: {priority}")
-            print(priority)
             return {
                 "point_name": point.point_name,
                 "point_object_id": point.point_object_id,
