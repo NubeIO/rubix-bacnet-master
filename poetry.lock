@@ -293,6 +293,14 @@ python-versions = ">=3.6.0"
 future = "*"
 
 [[package]]
+name = "polling2"
+version = "0.4.6"
+description = "Updated polling utility with many configurable options"
+category = "main"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "pycparser"
 version = "2.20"
 description = "C parser in Python"
@@ -541,7 +549,7 @@ testing = ["coverage (>=5.0.3)", "zope.event", "zope.testing"]
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "d3d6c051c08f9ee24b9e767d8b6a187d65c9a250892d8c61dd437f0a34b3cb54"
+content-hash = "8d51f3e266f2355db9a1414b30b326aff7bd00e7cff99d5edf2912d873fad5d5"
 
 [metadata.files]
 altgraph = [
@@ -797,6 +805,10 @@ paho-mqtt = [
 ]
 pefile = [
     {file = "pefile-2021.5.24.tar.gz", hash = "sha256:ed79b2353daa58421459abf4d685953bde0adf9f6e188944f97ba9795f100246"},
+]
+polling2 = [
+    {file = "polling2-0.4.6-py2.py3-none-any.whl", hash = "sha256:003facc3b47ac1e03847610c484409315bc2b2496ff48d0f05114e833cc27a5f"},
+    {file = "polling2-0.4.6.tar.gz", hash = "sha256:6fd676640c4575b3d94888b34086cf64ad2ce6b3314107ecd42add2be8224fe0"},
 ]
 pycparser = [
     {file = "pycparser-2.20-py2.py3-none-any.whl", hash = "sha256:7582ad22678f0fcd81102833f60ef8d0e57288b6b5fb00323d101be910e35705"},

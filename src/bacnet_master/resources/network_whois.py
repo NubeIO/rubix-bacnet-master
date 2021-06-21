@@ -1,9 +1,9 @@
 import logging
-
 from flask_restful import reqparse
 from rubix_http.resource import RubixResource
 from rubix_http.exceptions.exception import NotFoundException
 
+from src import db
 from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.models.device import BacnetDeviceModel
 from src.bacnet_master.models.network import BacnetNetworkModel
@@ -67,7 +67,7 @@ class Whois(NetworkWhois):
             return BACnetFunctions.who_add_devices(devices, network_uuid)
 
 
-def _poll_points_rpm(**kwargs):
+def poll_points_rpm(**kwargs):
     _devices = None
     _points = None
     network_uuid = kwargs.get('network_uuid')
@@ -76,31 +76,36 @@ def _poll_points_rpm(**kwargs):
     discovery = kwargs.get('discovery')
     timeout = BACnetFunctions.validate_timeout(kwargs.get('timeout'))
     if device_uuid:
+        db.session.commit()  # was added for when patching points
         device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if not device:
             raise NotFoundException(f"No device with that ID is added {device_uuid}")
         if discovery:
             object_list = DeviceService.get_instance().build_point_list_new(device)
-            points = DeviceService.get_instance().poll_points_rpm(device, object_list=object_list, timeout=timeout)
-            points_list = points.get("discovered_points")
-            points_list = points_list.get("points")
-            for i in points_list:
-                _points = points_list.get(i)
-                for point in _points:
-                    point_name = point.get("point_name")
-                    point_object_id = point.get("point_object_id")
-                    point_object_type = ObjType.from_underscore(i)
-                    data = {'point_name': point_name, 'point_enable': True, 'point_object_id': point_object_id,
-                            'point_object_type': point_object_type, 'device_uuid': device_uuid}
-
-                    if add_points:
-                        AddPoint.add_point(data)
-            return points
+            if not isinstance(object_list, list):
+                logger.error(f"POLL-POINTS discovery:{device.device_name} error:{object_list}")
+            else:
+                points = DeviceService.get_instance().poll_points_list(device, object_list=object_list, timeout=timeout)
+                points_list = points.get("discovered_points")
+                points_list = points_list.get("points")
+                for i in points_list:
+                    _points = points_list.get(i)
+                    for point in _points:
+                        point_name = point.get("point_name")
+                        point_object_id = point.get("point_object_id")
+                        point_object_type = ObjType.from_underscore(i)
+                        if add_points:
+                            data = {'point_name': point_name, 'point_enable': True, 'point_object_id': point_object_id,
+                                    'point_object_type': point_object_type, 'device_uuid': device_uuid}
+                            AddPoint.add_point(data)
+                return points
         else:
             if not device.points:
                 raise NotFoundException(f"Not points are added for this device:{device_uuid}")
             _points = device
-            points = DeviceService.get_instance().poll_points_rpm(device, timeout=timeout)
+            points = DeviceService.get_instance().poll_points_list(device, timeout=timeout)
+            logger.info(f"POLL-POINTS discovery:{discovery} points add_points:{add_points} points:{points}")
+
             return points
 
 
@@ -113,83 +118,8 @@ class DeviceAllPoints(RubixResource):
         add_points = data.get('add_points')
         discovery = data.get('discovery')
         timeout = BACnetFunctions.validate_timeout(data.get('timeout'))
-        return _poll_points_rpm(device_uuid=device_uuid,
-                                discovery=discovery,
-                                add_points=add_points,
-                                timeout=timeout
-                                )
-
-# def _discover_points(**kwargs):
-#     _devices = None
-#     network_uuid = kwargs.get('network_uuid')
-#     if network_uuid:
-#         network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
-#         if not network:
-#             raise NotFoundException("Network not found")
-#         if not network.devices:
-#             raise NotFoundException(f"Not devices are are added to the system network uuid:{network_uuid}")
-#         else:
-#             _devices = network.devices
-#
-#     device_uuid = kwargs.get('device_uuid')
-#     if device_uuid:
-#         device = BacnetDeviceModel.find_by_device_uuid(device_uuid)
-#         if not device:
-#             raise NotFoundException(f"No device with that ID is added {device_uuid}")
-#         else:
-#             _devices = [device]
-#
-#     add_points = kwargs.get('add_points')
-#     fast_poll = kwargs.get('fast_poll')
-#     timeout = BACnetFunctions.validate_timeout(kwargs.get('timeout'))
-#
-#     get_point_name = None
-#     get_point_priority = None
-#     get_point_value = None
-#     if add_points:
-#         get_point_name = True
-#     else:
-#         if fast_poll:
-#             get_point_value = True
-#         else:
-#             get_point_name = True
-#             get_point_value = True
-#             get_point_priority = True
-#
-#     count = 0
-#     network_devices = {}
-#     network_devices_list = {}
-#     for device in _devices:
-#         _device_uuid = device.device_uuid
-#         _device_name = device.device_name
-#         # do bacnet read and build the points list
-#         points = DeviceService.get_instance().build_point_list(device,
-#                                                                get_point_name,
-#                                                                get_point_value,
-#                                                                get_point_priority=get_point_priority,
-#                                                                timeout=timeout)
-#
-#         if not isinstance(points, dict):
-#             if not network_uuid:
-#                 raise NotFoundException(points)
-#         count = count + 1
-#         network_devices.update({"devices_found": count})
-#         _device_key = f"{_device_name}_{_device_uuid}"
-#         network_devices.update({_device_key: points})
-#         if add_points:
-#             _points = BACnetFunctions.add_points(_device_uuid, points, _device_name)
-#             network_devices_list.update({_device_key: _points})
-#     if add_points and network_uuid:
-#         return network_devices_list
-#     elif add_points and device_uuid:
-#         out = {}
-#         for key, value in network_devices_list.items():
-#             out = value
-#         return out
-#     elif device_uuid:
-#         out = {}
-#         for key, value in network_devices.items():
-#             out = value
-#         return out
-#     elif network_uuid:
-#         return network_devices
+        return poll_points_rpm(device_uuid=device_uuid,
+                               discovery=discovery,
+                               add_points=add_points,
+                               timeout=timeout
+                               )

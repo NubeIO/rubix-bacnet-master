@@ -3,6 +3,7 @@ from threading import Thread
 
 from flask import current_app
 
+from src.bacnet_master.polling.polling import Polling
 from .setting import AppSetting
 
 logger = logging.getLogger(__name__)
@@ -36,3 +37,4 @@ class Background:
 
         if setting.bacnet.master_enabled:
             Network.get_instance().start()
+            FlaskThread(target=Polling.run, daemon=True).start()

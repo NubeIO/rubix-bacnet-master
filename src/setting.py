@@ -26,6 +26,8 @@ class BACnetSetting(BaseSetting):
     def __init__(self):
         self.enabled: bool = True
         self.master_enabled: bool = True
+        self.polling_enable: bool = True
+        self.polling_time_in_seconds = 5
         self.ip = '192.168.0.100'
         self.port = 47808
         self.device_id = 123

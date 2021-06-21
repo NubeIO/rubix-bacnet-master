@@ -1,3 +1,4 @@
+import json
 import logging
 
 from registry.registry import RubixRegistry
@@ -6,7 +7,7 @@ from rubix_mqtt.mqtt import MqttClientBase
 from src import MqttSetting
 from src.utils import Singleton
 
-# logger = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def allow_only_on_prefix(func):
@@ -27,9 +28,14 @@ class MqttClient(MqttClientBase, metaclass=Singleton):
         return super().config if isinstance(super().config, MqttSetting) else MqttSetting()
 
     @allow_only_on_prefix
-    def publish_value(self, topic_suffix: tuple, payload: str):
+    def publish_value(self, topic_suffix: tuple, payload):
+        _payload = None
+        if isinstance(payload, dict):
+            _payload = json.dumps(payload)
+        else:
+            _payload = payload
         if self.config.publish_value:
-            self.__publish_mqtt_value(self.make_topic((self.config.topic,) + topic_suffix), payload)
+            self.__publish_mqtt_value(self.make_topic((self.config.topic,) + topic_suffix), _payload)
 
     @allow_only_on_prefix
     def publish_debug(self, payload: str):
@@ -38,9 +44,9 @@ class MqttClient(MqttClientBase, metaclass=Singleton):
 
     def __publish_mqtt_value(self, topic: str, payload: str):
         if not self.status():
-            # logger.error(f"MQTT client {self.to_string()} is not connected...")
+            logger.error(f"MQTT client {self.to_string()} is not connected...")
             return
-        # logger.debug(f"MQTT_PUBLISH: 'topic': {topic}, 'payload': {payload}, 'retain': {self.config.retain}")
+        logger.debug(f"MQTT_PUBLISH: 'topic': {topic}, 'payload': {payload}, 'retain': {self.config.retain}")
         self.client.publish(topic, str(payload), qos=self.config.qos, retain=self.config.retain)
 
     @classmethod

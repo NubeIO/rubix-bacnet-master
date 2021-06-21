@@ -8,7 +8,7 @@ from src.utils.functions import Functions
 
 class BacnetNetworkModel(ModelBase):
     __tablename__ = 'bacnet_networks'
-    network_name = db.Column(db.String(80), unique=False, nullable=False)
+    network_name = db.Column(db.String(100), unique=True, nullable=False)
     network_enable = db.Column(db.Boolean())
     network_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     network_ip = db.Column(db.String(20), unique=False, nullable=False)
