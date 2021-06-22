@@ -2,7 +2,7 @@ import logging
 from BAC0.core.io.IOExceptions import UnknownObjectError, NoResponseFromController, UnknownPropertyError
 
 from src.bacnet_master.bacnet_exceptions import BACnetNetworkInstanceError
-from src.bacnet_master.interfaces.device import ObjType
+from src.bacnet_master.interfaces.device import ObjType, PointObjType
 from src.bacnet_master.interfaces.object_property import ObjProperty
 from src.bacnet_master.models.device import BacnetDeviceModel
 from src.bacnet_master.models.network import BacnetNetworkModel
@@ -320,11 +320,12 @@ class Device:
         multi_state_value = []
         address = self.build_device_address(device)
         device_name = device.device_name
-
+        type_mstp = device.type_mstp
         if object_list:
             for obj in object_list:
                 object_type = obj[0]
-                if object_type != "device":
+                if PointObjType.check_is_point_type(object_type):
+                    # if object_type == ObjType.analogInput.name or object_type == ObjType.analogInput.name:
                     point_object_id = obj[1]
                     key = f"{object_type}:{point_object_id}"
                     points_list[key] = ['objectName', 'presentValue']
@@ -347,7 +348,10 @@ class Device:
             if r:
                 yield r
 
-        _points_list = list(chunk_dict(points_list, 10))
+        if type_mstp:
+            _points_list = list(chunk_dict(points_list, 2))
+        else:
+            _points_list = list(chunk_dict(points_list, 5))
 
         def payload(_list):
             return {"point_object_id": _list[0], "point_name": _list[1], "point_value": _list[2]}

@@ -1,10 +1,10 @@
 import logging
+
 import requests
 from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.interfaces.device_supported_services import SupportedServices
 from src.bacnet_master.interfaces.object_property import ObjProperty
 from src.utils.functions import Functions
-
 
 logger = logging.getLogger(__name__)
 
@@ -60,15 +60,19 @@ class BACnetFunctions:
 
     @staticmethod
     def clean_point_value(payload):
+        if payload == float("inf"):
+            return -9999999999
+        if payload == float("-inf"):
+            return -9999999999
         if isinstance(payload, (int, float)):
             return payload
         elif payload == "active":
             return 1
         elif payload == "inactive":
             return 0
-        elif payload == True:
+        elif payload:
             return 1
-        elif payload == False:
+        elif not payload:
             return 0
 
     @staticmethod

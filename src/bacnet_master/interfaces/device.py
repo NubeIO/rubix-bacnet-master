@@ -92,4 +92,28 @@ class ObjType(Enum):
                     return key
 
 
+class PointObjType(Enum):
+    analogInput = "analog_input", 0, 'analogInput'
+    analogOutput = "analog_output", 1, 'analogOutput'
+    analogValue = "analog_value", 2, 'analogValue'
+    binaryInput = "binary_input", 3, 'binaryInput'
+    binaryOutput = "binary_output", 4, 'binaryOutput'
+    binaryValue = "binary_value", 5, 'binaryValue'
+    multiStateInput = "multi_state_input", 13, 'multiStateInput'
+    multiStateOutput = "multi_state_output", 14, 'multiStateOutput'
+    multiStateValue = "multi_state_value", 19, 'multiStateValue'
+
+    @classmethod
+    def check_is_point_type(cls, lookup: str) -> bool:
+        """
+        :param lookup:  multiStateValue
+        :return: True
+        """
+        for i in PointObjType:
+            name = i.value[2]
+            if name in lookup:
+                return True
+        return False
+
+
 
