@@ -1,4 +1,7 @@
 # CHANGELOG
+## [v0.2.0](https://github.com/NubeIO/rubix-bacnet-master/tree/v0.2.0) (2020-06-29)
+- Upgrade rubix-registry for supporting wires-plat change
+
 ## [v0.1.0](https://github.com/NubeIO/rubix-bacnet-master/tree/v0.1.0) (2020-06-18)
 - added in polling
 
