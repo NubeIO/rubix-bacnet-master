@@ -11,7 +11,7 @@ gunicorn = "^20.1.0"
 toml = "^0.10.2"
 click = "^8.0.1"
 rubix-http = {git = "https://github.com/NubeIO/rubix-http", rev = "v1.3.0"}
-rubix-registry = { git = "https://github.com/NubeIO/rubix-registry", rev = "v1.0.0" }
+rubix-registry = {git = "https://github.com/NubeIO/rubix-registry", rev = "v1.1.1"}
 rubix-mqtt = {git = "https://github.com/NubeIO/rubix-mqtt", rev = "v1.2.0"}
 BAC0 = "^21.2.25"
 polling2 = "^0.4.6"
