@@ -448,19 +448,19 @@ class Device:
             object_list = network_instance.read(req, timeout=timeout)
             return object_list
         except UnknownPropertyError as e:
-            logger.error(f"{device.name}:is get object device list UnknownPropertyError: {e}")
+            logger.error(f"{device.device_name}:is get object device list UnknownPropertyError: {e}")
             return {
                 "value": None,
                 "error": f"UnknownPropertyError: {e}"
             }
         except UnknownObjectError as e:
-            logger.error(f"{device.name}:is get object device list UnknownObjectError: {e}")
+            logger.error(f"{device.device_name}:is get object device list UnknownObjectError: {e}")
             return {
                 "value": None,
                 "error": f"UnknownObjectError: {e}"
             }
         except Exception as e:
-            logger.error(f"{device.name}:is get object device list Exception: {e}")
+            logger.error(f"{device.device_name}:is get object device list Exception: {e}")
             return {
                 "value": None,
                 "error": f"UnknownObjectError: {e}"
