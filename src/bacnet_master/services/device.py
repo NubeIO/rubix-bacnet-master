@@ -52,7 +52,7 @@ class Device:
                     f"object_type:{object_type},  prop:{prop}, "
                     f"network_number:{network_number}")
         if ethernet_mac_address:
-            return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            return f'{network_number}:{ethernet_mac_address} {object_type} {object_instance} {prop}'
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
         if network_number != 0:
@@ -65,6 +65,9 @@ class Device:
         device_mac = device.device_mac
         network_number = device.network_number
         network_number = BACnetFunctions.network_number(network_number)
+        ethernet_mac_address = device.ethernet_mac_address
+        if ethernet_mac_address:
+            return f'{network_number}:{ethernet_mac_address}'
         if device_mac >= 1:
             return f'{network_number}:{device_mac}'
         if network_number != 0:
@@ -90,7 +93,7 @@ class Device:
                     f"object_type:{object_type},  prop:{prop}, "
                     f"network_number:{network_number} ethernet_mac_address:{ethernet_mac_address}")
         if ethernet_mac_address:
-            out = f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            out = f'{network_number}:{ethernet_mac_address} {object_type} {object_instance} {prop}'
             logger.info(f"POLL-POINTS _common_object ethernet_mac_address: {out}")
             return
         if type_mstp:
@@ -439,7 +442,6 @@ class Device:
             return {"network_instance": "network instance is none"}
         get_point_priority = kwargs.get('object_type')
         timeout = 1
-        logger.info(f"POLL-POINTS discovery/read object list")
         try:
             object_list = network_instance.read(self._common_object(device), timeout=timeout)
             return object_list

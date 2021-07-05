@@ -128,14 +128,21 @@ class BACnetFunctions:
             ip = kwargs.get('device_ip')
             mask = kwargs.get('device_mask')
             port = kwargs.get('device_port')
-        logger.info(f"FUNCTION BUILD URL ip:{ip} port:{port} ip:{mask}")
+
         if mask is not None:
             if port is not None:
-                return f"{ip}/{mask}:{port}"
+                out = f"{ip}/{mask}:{port}"
+                logger.info(f"FUNCTION BUILD URL ip/mask:port:{out}")
+                return out
             else:
-                return f"{ip}/{mask}"
+                out = f"{ip}/{mask}"
+                logger.info(f"FUNCTION BUILD URL ip/mask:{out}")
+                return out
+
         else:
-            return ip
+            out = ip
+            logger.info(f"FUNCTION BUILD URL ip:{out}")
+            return out
 
     @staticmethod
     def check_priority(value) -> bool:
