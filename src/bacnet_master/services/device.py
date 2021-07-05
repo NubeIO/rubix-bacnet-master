@@ -86,13 +86,22 @@ class Device:
         prop = kwargs.get('prop') or ObjProperty.objectList.name
         ethernet_mac_address = kwargs.get("ethernet_mac_address") or device.ethernet_mac_address
         if ethernet_mac_address:
-            return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            out = f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            logger.info(f"POLL-POINTS _common_object ethernet_mac_address: {out}")
+            return
         if type_mstp:
-            return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            out = f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
+            logger.info(f"POLL-POINTS _common_object type_mstp: {out}")
+            return out
         if network_number != 0:
-            return f'{network_number}:{dev_url} {object_type} {object_instance} {prop}'
+            out = f'{network_number}:{dev_url} {object_type} {object_instance} {prop}'
+            logger.info(f"POLL-POINTS _common_object network_number: {out}")
+            return out
         else:
-            return f'{dev_url} {object_type} {object_instance} {prop}'
+            out = f'{dev_url} {object_type} {object_instance} {prop}'
+            logger.info(f"POLL-POINTS _common_object dev_url: {out}")
+            return out
+
 
     def _get_network_from_device(self, device):
         return Network.get_instance().get_network(device.network)
