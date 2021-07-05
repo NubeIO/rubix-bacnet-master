@@ -81,11 +81,14 @@ def poll_points_rpm(**kwargs):
         if not device:
             raise NotFoundException(f"No device with that ID is added {device_uuid}")
         if discovery:
+            logger.info(f"POLL-POINTS discovery:{discovery}  device_uuid{device_uuid} points add_points:{add_points}")
             object_list = DeviceService.get_instance().build_point_list_new(device)
+            logger.info(f"POLL-POINTS returned object_list{object_list}")
             if not isinstance(object_list, list):
                 logger.error(f"POLL-POINTS discovery:{device.device_name} error:{object_list}")
             else:
                 points = DeviceService.get_instance().poll_points_list(device, object_list=object_list, timeout=timeout)
+                logger.info(f"POLL-POINTS returned points{points}")
                 points_list = points.get("discovered_points")
                 points_list = points_list.get("points")
                 for i in points_list:
