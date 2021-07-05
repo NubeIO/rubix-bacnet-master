@@ -89,4 +89,3 @@ class SupportedServices(Enum):
                     if ss[x] == 1:
                         ss_dict[get_ss[0]] = True
         return ss_dict
-

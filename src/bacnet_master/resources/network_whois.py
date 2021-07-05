@@ -44,6 +44,7 @@ class Whois(NetworkWhois):
         show_supported_services = data['show_supported_services']
         add_devices = Functions.to_bool(add_devices)
         show_supported_services = Functions.to_bool(show_supported_services)
+        show_supported_services = True
         devices = DeviceService().whois(network_uuid, whois=whois,
                                         network_number=network_number,
                                         global_broadcast=global_broadcast,

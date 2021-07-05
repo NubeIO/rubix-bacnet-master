@@ -442,7 +442,6 @@ class Device:
             return {"network_instance": "network instance is none"}
         get_point_priority = kwargs.get('object_type')
         timeout = kwargs.get('timeout') or 2
-        timeout = 10
         try:
             req = self._common_object(device)
             logger.info(f"POLL-POINTS:req: {req}")
