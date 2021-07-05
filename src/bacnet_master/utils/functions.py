@@ -392,6 +392,7 @@ class BACnetFunctions:
             if ethernet_mac_address:
                 device_name = f"{device_name}_{ethernet_mac_address}"
             logger.info(f"WHOIS found devices:{each_device}")
+            logger.info(f"WHOIS device_name:{device_name} ethernet_mac_address{ethernet_mac_address}")
             dev_url = BACnetFunctions.build_url(device_ip=device_ip,
                                                 device_mask=device_mask, device_port=device_port)
             if show_supported_services:
