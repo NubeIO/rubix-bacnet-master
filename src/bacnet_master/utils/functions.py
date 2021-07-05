@@ -413,9 +413,9 @@ class BACnetFunctions:
                     prop=ObjProperty.protocolServicesSupported.name,
                     ethernet_mac_address=ethernet_mac_address
                 )
-                logger.info(f"WHOIS protocolServicesSupported:{get_ss}")
                 _get_ss = network_instance.read(get_ss)
                 supported_services = SupportedServices.check_supported_services(_get_ss)
+                logger.info(f"WHOIS protocolServicesSupported:{supported_services}")
                 each_device["supports_rpm"] = supported_services.get("readPropertyMultiple")
                 each_device["supports_wpm"] = supported_services.get("writePropertyMultiple")
                 each_device.update({"supported_services": {}})
@@ -457,7 +457,7 @@ class BACnetFunctions:
                     network_number = Functions.to_int(network_number)
                     device_ip = "0.0.0.0"
                     _mac = val[1]
-                    if isinstance(_mac, int):
+                    if len(_mac) <= 4:
                         device_mac = Functions.to_int(_mac)
                         type_mstp = True
                     else:
@@ -495,7 +495,7 @@ class BACnetFunctions:
                     network_number = Functions.to_int(network_number)
                     device_ip = "0.0.0.0"
                     _mac = val[1]
-                    if isinstance(_mac, int):
+                    if len(_mac) <= 4:
                         device_mac = Functions.to_int(_mac)
                         type_mstp = True
                     else:
