@@ -128,6 +128,7 @@ class BACnetFunctions:
             ip = kwargs.get('device_ip')
             mask = kwargs.get('device_mask')
             port = kwargs.get('device_port')
+        logger.info(f"FUNCTION BUILD URL ip:{ip} port:{port} ip:{mask}")
         if mask is not None:
             if port is not None:
                 return f"{ip}/{mask}:{port}"
@@ -391,7 +392,6 @@ class BACnetFunctions:
             ethernet_mac_address = each_device.get('ethernet_mac_address')
             if ethernet_mac_address:
                 device_name = f"{device_name}_{ethernet_mac_address}"
-            logger.info(f"WHOIS found devices:{each_device}")
             logger.info(f"WHOIS device_name:{device_name} ethernet_mac_address{ethernet_mac_address}")
             dev_url = BACnetFunctions.build_url(device_ip=device_ip,
                                                 device_mask=device_mask, device_port=device_port)
@@ -416,8 +416,8 @@ class BACnetFunctions:
                 _dict.update({device_name: each_device})
             else:
                 _dict.update({device_name: each_device})
-            logger.info(f"WHOIS response  devices count found:{count}")
-            logger.info(f"WHOIS response  devices found after clean:{_dict}")
+        logger.info(f"WHOIS response  devices count found:{count}")
+        logger.info(f"WHOIS response  devices found after clean:{_dict}")
         return _dict
 
     @staticmethod
@@ -450,7 +450,7 @@ class BACnetFunctions:
                     network_number = Functions.to_int(network_number)
                     device_ip = "0.0.0.0"
                     _mac = val[1]
-                    if not isinstance(_mac, str):
+                    if isinstance(_mac, int):
                         device_mac = Functions.to_int(_mac)
                         type_mstp = True
                     else:
@@ -459,9 +459,11 @@ class BACnetFunctions:
                     device_mask = 0
                 device_object_id = _list[1]
                 device_name = f"dev_{device_object_id}"
-
-            except:
+            except ValueError as e:
+                logger.error(f"FUNCTION whois clean: {e}")
                 pass
+            logger.info(
+                f"FUNCTION whois clean:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
             return {
                 "vendor_name": vendor_name,
                 "device_name": device_name,
@@ -486,7 +488,7 @@ class BACnetFunctions:
                     network_number = Functions.to_int(network_number)
                     device_ip = "0.0.0.0"
                     _mac = val[1]
-                    if not isinstance(_mac, str):
+                    if isinstance(_mac, int):
                         device_mac = Functions.to_int(_mac)
                         type_mstp = True
                     else:
@@ -495,8 +497,11 @@ class BACnetFunctions:
                     device_mask = 0
                 device_object_id = _list[3]
                 device_name = _list[0]
-            except:
+            except ValueError as e:
+                logger.error(f"FUNCTION whois clean: {e}")
                 pass
+            logger.info(
+                f"FUNCTION whois clean:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
             return {
                 "vendor_name": vendor_name,
                 "device_name": device_name,
