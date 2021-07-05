@@ -85,6 +85,10 @@ class Device:
         object_type = kwargs.get('object_type') or ObjType.device.name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
         ethernet_mac_address = kwargs.get("ethernet_mac_address") or device.ethernet_mac_address
+        logger.info(f"DO read common object dev_url:{dev_url}, type_mstp:{type_mstp}, "
+                    f"device_mac:{device_mac}, object_instance:{object_instance},  "
+                    f"object_type:{object_type},  prop:{prop}, "
+                    f"network_number:{network_number} ethernet_mac_address:{ethernet_mac_address}")
         if ethernet_mac_address:
             out = f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
             logger.info(f"POLL-POINTS _common_object ethernet_mac_address: {out}")
