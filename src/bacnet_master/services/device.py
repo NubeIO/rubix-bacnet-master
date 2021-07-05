@@ -443,12 +443,28 @@ class Device:
         get_point_priority = kwargs.get('object_type')
         timeout = 1
         try:
-            object_list = network_instance.read(self._common_object(device), timeout=timeout)
+            req = self._common_object(device)
+            logger.info(f"POLL-POINTS:req: {req}")
+            object_list = network_instance.read(req, timeout=timeout)
             return object_list
+        except UnknownPropertyError as e:
+            logger.error(f"{device.name}:is get object device list UnknownPropertyError: {e}")
+            return {
+                "value": None,
+                "error": f"UnknownPropertyError: {e}"
+            }
+        except UnknownObjectError as e:
+            logger.error(f"{device.name}:is get object device list UnknownObjectError: {e}")
+            return {
+                "value": None,
+                "error": f"UnknownObjectError: {e}"
+            }
         except Exception as e:
-            logger.error(
-                f"Exception: on build points list cant see device {device.device_name}  msg: {e} ")
-            return f"Exception: on build points list cant see device {device.device_name}  msg: {e} "
+            logger.error(f"{device.name}:is get object device list Exception: {e}")
+            return {
+                "value": None,
+                "error": f"UnknownObjectError: {e}"
+            }
 
     def get_object_list(self, device):
         network_instance = self._get_network_from_device(device)
