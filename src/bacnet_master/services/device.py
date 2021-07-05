@@ -443,24 +443,25 @@ class Device:
         get_point_priority = kwargs.get('object_type')
         timeout = 1
         try:
-            req = self._common_object(device)
+            req = "1:0x000000002940 device 10560 objectList"
             logger.info(f"POLL-POINTS:req: {req}")
+            # object_list = "1:0x000000002940 device 10560 objectList"
             object_list = network_instance.read(req, timeout=timeout)
             return object_list
         except UnknownPropertyError as e:
-            logger.error(f"{device.device_name}:is get object device list UnknownPropertyError: {e}")
+            logger.error(f"{device.device_name}: get object device list UnknownPropertyError: {e}")
             return {
                 "value": None,
                 "error": f"UnknownPropertyError: {e}"
             }
         except UnknownObjectError as e:
-            logger.error(f"{device.device_name}:is get object device list UnknownObjectError: {e}")
+            logger.error(f"{device.device_name}: get object device list UnknownObjectError: {e}")
             return {
                 "value": None,
                 "error": f"UnknownObjectError: {e}"
             }
         except Exception as e:
-            logger.error(f"{device.device_name}:is get object device list Exception: {e}")
+            logger.error(f"{device.device_name}: get object device list Exception: {e}")
             return {
                 "value": None,
                 "error": f"UnknownObjectError: {e}"
