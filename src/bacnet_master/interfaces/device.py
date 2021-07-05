@@ -109,11 +109,14 @@ class PointObjType(Enum):
         :param lookup:  multiStateValue
         :return: True
         """
-        for i in PointObjType:
-            name = i.value[2]
-            if name in lookup:
-                return True
-        return False
+        if isinstance(lookup, str):
+            for i in PointObjType:
+                name = i.value[2]
+                if name in lookup:
+                    return True
+            return False
+        else:
+            return False
 
 
 
