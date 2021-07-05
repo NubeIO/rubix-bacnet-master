@@ -391,23 +391,23 @@ class BACnetFunctions:
             dev_url = BACnetFunctions.build_url(device_ip=device_ip,
                                                 device_mask=device_mask, device_port=device_port)
             logger.info(f"dev url:{dev_url}")
-            get_ss = BACnetFunctions.common_object_no_device(
-                dev_url=dev_url,
-                device_mac=device_mac,
-                type_mstp=type_mstp,
-                network_number=network_number,
-                device_object_id=device_object_id,
-                object_type=ObjType.device.name,
-                prop=ObjProperty.protocolServicesSupported.name,
-                ethernet_mac_address=ethernet_mac_address
-            )
-            logger.info(f"WHOIS protocolServicesSupported:{get_ss}")
-            _get_ss = network_instance.read(get_ss)
-            supported_services = SupportedServices.check_supported_services(_get_ss)
-            each_device["supports_rpm"] = supported_services.get("readPropertyMultiple")
-            each_device["supports_wpm"] = supported_services.get("writePropertyMultiple")
-            each_device.update({"supported_services": {}})
             if show_supported_services:
+                get_ss = BACnetFunctions.common_object_no_device(
+                    dev_url=dev_url,
+                    device_mac=device_mac,
+                    type_mstp=type_mstp,
+                    network_number=network_number,
+                    device_object_id=device_object_id,
+                    object_type=ObjType.device.name,
+                    prop=ObjProperty.protocolServicesSupported.name,
+                    ethernet_mac_address=ethernet_mac_address
+                )
+                logger.info(f"WHOIS protocolServicesSupported:{get_ss}")
+                _get_ss = network_instance.read(get_ss)
+                supported_services = SupportedServices.check_supported_services(_get_ss)
+                each_device["supports_rpm"] = supported_services.get("readPropertyMultiple")
+                each_device["supports_wpm"] = supported_services.get("writePropertyMultiple")
+                each_device.update({"supported_services": {}})
                 each_device.update({"supported_services": supported_services})
             _dict.update({device_name: each_device})
         return _dict
