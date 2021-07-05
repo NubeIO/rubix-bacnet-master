@@ -374,9 +374,11 @@ class BACnetFunctions:
 
     @staticmethod
     def whois_is_build(read, network_instance, show_supported_services) -> dict:
-        logger.info(f"WHOIS response:{read}")
+        logger.info(f"WHOIS response raw:{read}")
         _dict = {}
+        count = 0
         for objects in read:
+            count = count + 1
             each_device = BACnetFunctions.whois_split(objects)
             device_name = each_device.get('device_name')
             device_ip = each_device.get('device_ip')
@@ -390,7 +392,7 @@ class BACnetFunctions:
             logger.info(f"WHOIS found devices:{each_device}")
             dev_url = BACnetFunctions.build_url(device_ip=device_ip,
                                                 device_mask=device_mask, device_port=device_port)
-            logger.info(f"dev url:{dev_url}")
+
             if show_supported_services:
                 get_ss = BACnetFunctions.common_object_no_device(
                     dev_url=dev_url,
@@ -410,6 +412,8 @@ class BACnetFunctions:
                 each_device.update({"supported_services": {}})
                 each_device.update({"supported_services": supported_services})
             _dict.update({device_name: each_device})
+            logger.info(f"WHOIS response  devices count found:{count}")
+            logger.info(f"WHOIS response  devices found after clean:{_dict}")
         return _dict
 
     @staticmethod
