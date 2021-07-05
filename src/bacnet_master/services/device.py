@@ -443,7 +443,6 @@ class Device:
         multi_state_value = []
         # object_list = []
         discovery_errors = []
-
         obj_name = ObjProperty.objectName.name
         obj_present_value = ObjProperty.presentValue.name
         point_types = ["analogInput", "analogOutput", "analogValue", "binaryInput", "binaryOutput",

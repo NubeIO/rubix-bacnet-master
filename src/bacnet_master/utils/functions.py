@@ -446,7 +446,9 @@ class BACnetFunctions:
         device_port = 47808
         device_mask = 24
         ethernet_mac_address = None  # example ('1:0x000000002939', 10553)
+        manufacture = None
         # _list = ('1:0x000000002939', 10553)
+        logger.error(f"FUNCTION whois_split _list: {_list}")
         if len(_list) == 2:
             try:
                 val = _list[0].split(':')
@@ -467,10 +469,10 @@ class BACnetFunctions:
                 device_object_id = _list[1]
                 device_name = f"dev_{device_object_id}"
             except ValueError as e:
-                logger.error(f"FUNCTION whois clean: {e}")
+                logger.error(f"FUNCTION whois_split: {e}")
                 pass
             logger.info(
-                f"FUNCTION whois clean:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
+                f"FUNCTION  whois_split:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
             return {
                 "vendor_name": vendor_name,
                 "device_name": device_name,
@@ -483,7 +485,8 @@ class BACnetFunctions:
                 "supports_wpm": supports_wpm,
                 "device_port": device_port,
                 "device_mask": device_mask,
-                "ethernet_mac_address": ethernet_mac_address
+                "ethernet_mac_address": ethernet_mac_address,
+                "manufacture": manufacture
             }
         elif len(_list) == 4:
             try:
@@ -503,12 +506,13 @@ class BACnetFunctions:
                     device_port = 0
                     device_mask = 0
                 device_object_id = _list[3]
+                manufacture = _list[1]
                 device_name = _list[0]
             except ValueError as e:
                 logger.error(f"FUNCTION whois clean: {e}")
                 pass
             logger.info(
-                f"FUNCTION whois clean:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
+                f"FUNCTION whois_split:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
             return {
                 "vendor_name": vendor_name,
                 "device_name": device_name,
@@ -521,5 +525,6 @@ class BACnetFunctions:
                 "supports_wpm": supports_wpm,
                 "device_port": device_port,
                 "device_mask": device_mask,
-                "ethernet_mac_address": ethernet_mac_address
+                "ethernet_mac_address": ethernet_mac_address,
+                "manufacture": manufacture
             }

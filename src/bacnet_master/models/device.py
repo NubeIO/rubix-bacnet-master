@@ -17,6 +17,7 @@ class BacnetDeviceModel(ModelBase):
     device_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     device_mac = db.Column(db.Integer(), unique=False, nullable=False)
     ethernet_mac_address = db.Column(db.String(120), unique=False, nullable=True)
+    manufacture = db.Column(db.String(200), unique=False, nullable=True)
     device_object_id = db.Column(db.Integer(), unique=False, nullable=False)
     device_ip = db.Column(db.String(100), unique=False, nullable=False)
     device_mask = db.Column(db.Integer(), nullable=False)

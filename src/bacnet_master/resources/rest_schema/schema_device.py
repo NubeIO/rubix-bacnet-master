@@ -74,6 +74,11 @@ device_all_attributes = {
         'required': False,
         'help': 'Ethernet mac address'
     },
+    'manufacture': {
+        'type': str,
+        'required': False,
+        'help': 'Device manufacture'
+    },
 
 }
 device_extra_attributes = {
