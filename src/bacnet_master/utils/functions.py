@@ -119,6 +119,7 @@ class BACnetFunctions:
             ip = kwargs.get('device_ip')
             mask = kwargs.get('device_mask')
             port = kwargs.get('device_port')
+
         elif device:
             ip = device.device_ip
             mask = device.device_mask
@@ -361,6 +362,9 @@ class BACnetFunctions:
         network_number = BACnetFunctions.network_number(network_number)
         object_type = kwargs.get('object_type')
         prop = kwargs.get('prop')
+        ethernet_mac_address = kwargs.get('ethernet_mac_address')
+        if ethernet_mac_address:
+            return f'{network_number}:{ethernet_mac_address} {object_type} {device_object_id} {prop}'
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {device_object_id} {prop}'
         if network_number != 0:
@@ -375,7 +379,6 @@ class BACnetFunctions:
         for objects in read:
             each_device = BACnetFunctions.whois_split(objects)
             device_name = each_device.get('device_name')
-
             device_ip = each_device.get('device_ip')
             device_mac = each_device.get('device_mac')
             device_mask = each_device.get('device_mask')
@@ -383,10 +386,11 @@ class BACnetFunctions:
             type_mstp = each_device.get('type_mstp')
             network_number = each_device.get('network_number')
             device_object_id = each_device.get('device_object_id')
+            ethernet_mac_address = each_device.get('ethernet_mac_address')
             logger.info(f"WHOIS found devices:{each_device}")
             dev_url = BACnetFunctions.build_url(device_ip=device_ip,
                                                 device_mask=device_mask, device_port=device_port)
-            logger.info(f"WHOIS dev url:{dev_url}")
+            logger.info(f"dev url:{dev_url}")
             get_ss = BACnetFunctions.common_object_no_device(
                 dev_url=dev_url,
                 device_mac=device_mac,
@@ -394,7 +398,8 @@ class BACnetFunctions:
                 network_number=network_number,
                 device_object_id=device_object_id,
                 object_type=ObjType.device.name,
-                prop=ObjProperty.protocolServicesSupported.name
+                prop=ObjProperty.protocolServicesSupported.name,
+                ethernet_mac_address=ethernet_mac_address
             )
             logger.info(f"WHOIS protocolServicesSupported:{get_ss}")
             _get_ss = network_instance.read(get_ss)
@@ -426,7 +431,7 @@ class BACnetFunctions:
         device_port = 47808
         device_mask = 24
         ethernet_mac_address = None  # example ('1:0x000000002939', 10553)
-        # _list = ('1:0x000000002939', 10553)
+        _list = ('1:0x000000002939', 10553)
         if len(_list) == 2:
             try:
                 val = _list[0].split(':')
