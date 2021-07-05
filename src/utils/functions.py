@@ -11,7 +11,7 @@ class Functions:
             s = int(float(s))
             return s
         except ValueError as e:
-            return e
+            pass
 
     @staticmethod
     def to_float(s):

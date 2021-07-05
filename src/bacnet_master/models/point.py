@@ -7,12 +7,13 @@ from src.bacnet_master.models.model_base import ModelBase
 
 class BacnetPointModel(ModelBase):
     __tablename__ = 'bacnet_points'
-    point_name = db.Column(db.String(100), unique=True, nullable=False)
+    point_name = db.Column(db.String(100), unique=False, nullable=False)
     point_enable = db.Column(db.Boolean())
     point_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     point_object_id = db.Column(db.Integer(), unique=False, nullable=False)
     point_object_type = db.Column(db.Enum(ObjType), unique=False, nullable=False)
     point_writable = db.Column(db.Boolean())
+    cov = db.Column(db.Float(), unique=False, nullable=True)
     device_uuid = db.Column(db.String, db.ForeignKey('bacnet_devices.device_uuid'))
 
 
@@ -39,8 +40,13 @@ class BacnetPointModel(ModelBase):
         return cls.query.filter_by(point_name=point_name).first()
 
     @classmethod
-    def existing_object_name(cls, point_name):
+    def existing_name_on_patch(cls, point_name):
         return cls.query.filter(BacnetPointModel.point_name == point_name).all()
+
+    @classmethod
+    def existing_name_on_add(cls, device_uuid, point_name):
+        return cls.query.filter(BacnetPointModel.device_uuid == device_uuid) \
+            .filter((BacnetPointModel.point_name == point_name)).all()
 
     @classmethod
     def existing_object_id(cls, device_uuid, point_object_id, point_object_type):

@@ -1,7 +1,12 @@
 import BAC0
+bacnet = BAC0.lite('10.4.8.101/22:47808')
+print(bacnet.whois())
 
-bacnet = BAC0.lite('192.168.15.104/24:47808')
-print(bacnet.whois('1001:1'))
+
+mycontroller = BAC0.device('3:4', 5504, bacnet)
+
+# bacnet = BAC0.lite('192.168.15.104/24:47808')
+# print(bacnet.whois('1001:1'))
 # print(bacnet.discover(networks=[1001]))
 # print(bacnet.discover(networks='known'))
 # print(bacnet.discover())

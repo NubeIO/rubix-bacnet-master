@@ -12,10 +12,11 @@ logger = logging.getLogger(__name__)
 
 class BacnetDeviceModel(ModelBase):
     __tablename__ = 'bacnet_devices'
-    device_name = db.Column(db.String(100), unique=True, nullable=False)
+    device_name = db.Column(db.String(100), unique=False, nullable=False)
     device_enable = db.Column(db.Boolean())
     device_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     device_mac = db.Column(db.Integer(), unique=False, nullable=False)
+    ethernet_mac_address = db.Column(db.String(120), unique=False, nullable=True)
     device_object_id = db.Column(db.Integer(), unique=False, nullable=False)
     device_ip = db.Column(db.String(100), unique=False, nullable=False)
     device_mask = db.Column(db.Integer(), nullable=False)

@@ -68,7 +68,12 @@ device_all_attributes = {
         'type': int,
         'required': False,
         'help': 'Used for discovering networking (set to 0 to disable)'
-    }
+    },
+    'ethernet_mac_address': {
+        'type': str,
+        'required': False,
+        'help': 'Ethernet mac address'
+    },
 
 }
 device_extra_attributes = {
