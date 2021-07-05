@@ -1,10 +1,10 @@
 import BAC0
 
-bacnet = BAC0.lite('192.168.15.104/24:47808')
+bacnet = BAC0.lite('10.4.8.101/22:47808')
 # print(bacnet.readMultiple('192.168.15.12 device 260001 all'))
 # print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 all'))
 # print(bacnet.readMultiple('192.168.15.202 binaryOutput 1 85'))
-# print(bacnet.read('192.168.15.101/24:47808 device 2600 objectList'))
+print(bacnet.read('10.4.8.163/24:47808 device 15700 objectList'))
 
 # objectList
 

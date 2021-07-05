@@ -4,6 +4,7 @@
     "master_enabled": true,
     "polling_enable": true,
     "polling_time_in_seconds": 5,
+    "polling_time_between_devices": 10,
     "ip": "192.168.15.10",
     "port": 47808,
     "device_id": 2508,

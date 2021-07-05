@@ -48,9 +48,10 @@ class AddPoint(PointBase):
                                                                                 point_object_type)
         if check_object_id:
             raise NotFoundException(f"Point same Object Type and Object id exists id:{point_object_id}")
-        check_name: BacnetPointModel = BacnetPointModel.existing_object_name(point_name)
+
+        check_name: BacnetPointModel = BacnetPointModel.existing_name_on_add(device_uuid, point_name)
         if check_name:
-            raise NotFoundException(f"Point name with that device exists point_name:{point_name}")
+            raise NotFoundException(f"Point name with that device already exists name:{point_name}")
         point: BacnetPointModel = BacnetPointModel.find_by_point_uuid(point_uuid)
         if point is None:
             point = Point.create_model(point_uuid, data)
@@ -102,15 +103,19 @@ class Point(PointBase):
                 if not point_uuid == i.point_uuid:
                     raise NotFoundException(f"Point same Object Type and Object id exists id:{point_object_id}")
 
-        check_name: BacnetPointModel = BacnetPointModel.existing_object_name(point_name)
+        check_name: BacnetPointModel = BacnetPointModel.existing_name_on_patch(point_name)
         if check_name:
             if isinstance(check_name, list):
                 for i in check_name:
-                    if not point_uuid == i.point_uuid:
+                    if device_uuid == i.device_uuid:
+                        point.update(**data)
+                        return point
+                    else:
                         raise NotFoundException(f"Point name with that device exists point_name:{point_name}")
+        else:
+            point.update(**data)
+            return point
 
-        point.update(**data)
-        return point
 
     @classmethod
     def delete(cls, point_uuid):

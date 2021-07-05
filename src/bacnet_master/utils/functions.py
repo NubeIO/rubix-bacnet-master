@@ -178,6 +178,7 @@ class BACnetFunctions:
             supports_rpm = _device.get("supports_rpm")
             supports_wpm = _device.get("supports_wpm")
             supported_services = _device.get("supported_services")
+            ethernet_mac_address = _device.get("ethernet_mac_address")
             network_uuid = network_uuid
             body = {
                 "device_name": device_name,
@@ -191,7 +192,8 @@ class BACnetFunctions:
                 "supports_rpm": supports_rpm,
                 "supports_wpm": supports_wpm,
                 "network_uuid": network_uuid,
-                "supported_services": supported_services
+                "supported_services": supported_services,
+                "ethernet_mac_address": ethernet_mac_address,
             }
             res = requests.put(url,
                                headers={'Content-Type': 'application/json'},
@@ -423,6 +425,8 @@ class BACnetFunctions:
         supports_wpm = False
         device_port = 47808
         device_mask = 24
+        ethernet_mac_address = None  # example ('1:0x000000002939', 10553)
+        # _list = ('1:0x000000002939', 10553)
         if len(_list) == 2:
             try:
                 val = _list[0].split(':')
@@ -432,9 +436,12 @@ class BACnetFunctions:
                     network_number = val[0]
                     network_number = Functions.to_int(network_number)
                     device_ip = "0.0.0.0"
-                    device_mac = val[1]
-                    device_mac = Functions.to_int(device_mac)
-                    type_mstp = True
+                    _mac = val[1]
+                    if not isinstance(_mac, str):
+                        device_mac = Functions.to_int(_mac)
+                        type_mstp = True
+                    else:
+                        ethernet_mac_address = _mac
                     device_port = 0
                     device_mask = 0
                 device_object_id = _list[1]
@@ -453,7 +460,8 @@ class BACnetFunctions:
                 "supports_rpm": supports_rpm,
                 "supports_wpm": supports_wpm,
                 "device_port": device_port,
-                "device_mask": device_mask
+                "device_mask": device_mask,
+                "ethernet_mac_address": ethernet_mac_address
             }
         elif len(_list) == 4:
             try:
@@ -464,9 +472,12 @@ class BACnetFunctions:
                     network_number = val[0]
                     network_number = Functions.to_int(network_number)
                     device_ip = "0.0.0.0"
-                    device_mac = val[1]
-                    device_mac = Functions.to_int(device_mac)
-                    type_mstp = True
+                    _mac = val[1]
+                    if not isinstance(_mac, str):
+                        device_mac = Functions.to_int(_mac)
+                        type_mstp = True
+                    else:
+                        ethernet_mac_address = _mac
                     device_port = 0
                     device_mask = 0
                 device_object_id = _list[3]
@@ -484,5 +495,6 @@ class BACnetFunctions:
                 "supports_rpm": supports_rpm,
                 "supports_wpm": supports_wpm,
                 "device_port": device_port,
-                "device_mask": device_mask
+                "device_mask": device_mask,
+                "ethernet_mac_address": ethernet_mac_address
             }
