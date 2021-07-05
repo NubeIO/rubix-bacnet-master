@@ -439,7 +439,7 @@ class BACnetFunctions:
         device_port = 47808
         device_mask = 24
         ethernet_mac_address = None  # example ('1:0x000000002939', 10553)
-        _list = ('1:0x000000002939', 10553)
+        # _list = ('1:0x000000002939', 10553)
         if len(_list) == 2:
             try:
                 val = _list[0].split(':')
