@@ -389,10 +389,11 @@ class BACnetFunctions:
             network_number = each_device.get('network_number')
             device_object_id = each_device.get('device_object_id')
             ethernet_mac_address = each_device.get('ethernet_mac_address')
+            if ethernet_mac_address:
+                device_name = f"{device_name}_{ethernet_mac_address}"
             logger.info(f"WHOIS found devices:{each_device}")
             dev_url = BACnetFunctions.build_url(device_ip=device_ip,
                                                 device_mask=device_mask, device_port=device_port)
-
             if show_supported_services:
                 get_ss = BACnetFunctions.common_object_no_device(
                     dev_url=dev_url,
