@@ -95,7 +95,7 @@ class Device:
         if ethernet_mac_address:
             out = f'{network_number}:{ethernet_mac_address} {object_type} {object_instance} {prop}'
             logger.info(f"POLL-POINTS _common_object ethernet_mac_address: {out}")
-            return
+            return out
         if type_mstp:
             out = f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
             logger.info(f"POLL-POINTS _common_object type_mstp: {out}")
@@ -443,9 +443,8 @@ class Device:
         get_point_priority = kwargs.get('object_type')
         timeout = 1
         try:
-            req = "1:0x000000002940 device 10560 objectList"
+            req = self._common_object(device)
             logger.info(f"POLL-POINTS:req: {req}")
-            # object_list = "1:0x000000002940 device 10560 objectList"
             object_list = network_instance.read(req, timeout=timeout)
             return object_list
         except UnknownPropertyError as e:
