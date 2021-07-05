@@ -411,7 +411,7 @@ class BACnetFunctions:
                 each_device["supports_wpm"] = supported_services.get("writePropertyMultiple")
                 each_device.update({"supported_services": {}})
                 each_device.update({"supported_services": supported_services})
-            _dict.update({device_name: each_device})
+                _dict.update({device_name: each_device})
             logger.info(f"WHOIS response  devices count found:{count}")
             logger.info(f"WHOIS response  devices found after clean:{_dict}")
         return _dict
