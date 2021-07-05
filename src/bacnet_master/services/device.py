@@ -32,10 +32,10 @@ class Device:
     def get_dev_url(self, device):
         return f"{device.device_ip}:{device.device_port}"
 
-    @staticmethod
-    def test(uuid):
-        from src.bacnet_master.resources.point import AddPoint
-        return AddPoint.add_point(uuid)
+    # @staticmethod
+    # def test(uuid):
+    #     from src.bacnet_master.resources.point import AddPoint
+    #     return AddPoint.add_point(uuid)
 
     def _common_point(self, point, device, **kwargs):
         dev_url = kwargs.get('dev_url') or BACnetFunctions.build_url(device)
@@ -46,10 +46,13 @@ class Device:
         prop = kwargs.get('prop') or ObjProperty.presentValue.name
         type_mstp = kwargs.get('type_mstp') or device.type_mstp
         device_mac = kwargs.get('device_mac') or device.device_mac
+        ethernet_mac_address = kwargs.get("ethernet_mac_address") or device.ethernet_mac_address
         logger.info(f"DO POINT READ dev_url:{dev_url}, type_mstp:{type_mstp}, "
                     f"device_mac:{device_mac}, object_instance:{object_instance},  "
                     f"object_type:{object_type},  prop:{prop}, "
                     f"network_number:{network_number}")
+        if ethernet_mac_address:
+            return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
         if network_number != 0:
@@ -81,6 +84,9 @@ class Device:
         network_number = BACnetFunctions.network_number(network_number)
         object_type = kwargs.get('object_type') or ObjType.device.name
         prop = kwargs.get('prop') or ObjProperty.objectList.name
+        ethernet_mac_address = kwargs.get("ethernet_mac_address") or device.ethernet_mac_address
+        if ethernet_mac_address:
+            return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
         if type_mstp:
             return f'{network_number}:{device_mac} {object_type} {object_instance} {prop}'
         if network_number != 0:
@@ -420,6 +426,7 @@ class Device:
             return {"network_instance": "network instance is none"}
         get_point_priority = kwargs.get('object_type')
         timeout = 1
+        logger.info(f"POLL-POINTS discovery/read object list")
         try:
             object_list = network_instance.read(self._common_object(device), timeout=timeout)
             return object_list
