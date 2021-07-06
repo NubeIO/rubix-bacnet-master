@@ -437,7 +437,7 @@ class BACnetFunctions:
         device_ip = None
         network_number = 0
         device_mac = 0
-        device_name = f"no_name_{Functions.make_uuid()[4:-4]}"
+        device_name = None
         vendor_name = None
         device_object_id = None
         type_mstp = False
@@ -509,7 +509,8 @@ class BACnetFunctions:
                     device_mask = 0
                 device_object_id = _list[3]
                 manufacture = _list[1]
-                device_name = _list[0]
+                if _list[0] is not None:
+                    device_name = f"dev_{device_object_id}_na_{Functions.make_uuid()[6:-6]}"
             except ValueError as e:
                 logger.error(f"FUNCTION whois clean: {e}")
                 pass
