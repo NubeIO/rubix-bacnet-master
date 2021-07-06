@@ -29,7 +29,7 @@ class BACnetSetting(BaseSetting):
         self.polling_enable: bool = True
         self.polling_time_in_seconds = 5
         self.polling_time_between_devices = 5
-        self.split_polling_mqtt_output = False
+        self.enable_point_store = False
         self.ip = '192.168.15.10'
         self.port = 47808
         self.device_id = 123
