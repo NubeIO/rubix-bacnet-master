@@ -44,6 +44,7 @@ class AddPoint(PointBase):
         point_object_id = data.get("point_object_id")
         point_object_type = data.get("point_object_type")
         device_uuid = data.get("device_uuid")
+        priority_array_write: dict = {}
         check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid, point_object_id,
                                                                                 point_object_type)
         if check_object_id:
@@ -55,7 +56,7 @@ class AddPoint(PointBase):
         point: BacnetPointModel = BacnetPointModel.find_by_point_uuid(point_uuid)
         if point is None:
             point = Point.create_model(point_uuid, data)
-            point.save_to_db()
+            point.save_to_db(priority_array_write)
         else:
             point.update(**data)
         return point
@@ -139,11 +140,12 @@ class PointList(PointBase):
     @marshal_with(point_all_fields)
     def post(cls):
         data = Point.post_parser.parse_args()
+        priority_array_write: dict = {}
         point_uuid = data.pop('point_uuid')
         if BacnetPointModel.find_by_point_uuid(point_uuid) is not None:
             raise BadDataException(f"Point with point_uuid '{point_uuid}' already exists.")
         point = Point.create_model(point_uuid, data)
-        point.save_to_db()
+        point.save_to_db(priority_array_write)
         return point
 
 

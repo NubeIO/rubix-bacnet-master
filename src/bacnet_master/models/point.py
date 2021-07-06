@@ -1,7 +1,8 @@
-
 from src import db
 from src.bacnet_master.interfaces.device import ObjType
 from src.bacnet_master.models.model_base import ModelBase
+from src.bacnet_master.models.model_point_store import BACnetPointStoreModel
+from src.bacnet_master.models.model_priority_array import PriorityArrayModel
 
 
 class BacnetPointModel(ModelBase):
@@ -14,10 +15,19 @@ class BacnetPointModel(ModelBase):
     point_writable = db.Column(db.Boolean())
     cov = db.Column(db.Float(), unique=False, nullable=True)
     device_uuid = db.Column(db.String, db.ForeignKey('bacnet_devices.device_uuid'))
-
+    priority_array_write = db.relationship('PriorityArrayModel', backref='point', lazy=False, uselist=False,
+                                           cascade="all,delete")
+    point_store = db.relationship('BACnetPointStoreModel', backref='point', lazy=False, uselist=False,
+                                  cascade="all,delete")
 
     def __repr__(self):
         return f"Device(device_uuid = {self.device_uuid})"
+
+    def save_to_db(self, priority_array_write: dict):
+        self.priority_array_write = PriorityArrayModel(point_uuid=self.point_uuid, **priority_array_write)
+        self.point_store = BACnetPointStoreModel.create_new_point_store_model(self.point_uuid)
+        db.session.add(self)
+        db.session.commit()
 
     @classmethod
     def delete_all_points_by_device(cls, device_uuid):
@@ -52,3 +62,4 @@ class BacnetPointModel(ModelBase):
         return cls.query.filter(BacnetPointModel.device_uuid == device_uuid) \
             .filter((BacnetPointModel.point_object_id == point_object_id)) \
             .filter((BacnetPointModel.point_object_type == point_object_type)).all()
+

@@ -1,6 +1,12 @@
 from flask_restful import fields
 from collections import OrderedDict
 from src.bacnet_master.resources.utils import map_rest_schema
+
+point_store_fields = {
+    'present_value': fields.Float,
+    'ts': fields.String
+}
+
 priority_array_write_fields = OrderedDict({
     '_1': fields.Float,
     '_2': fields.Float,
@@ -84,6 +90,11 @@ point_all_attributes = {
     },
     'priority_array': {
         'type':  fields.Nested(priority_array_write_fields),
+        'required': False,
+        'help': 'point_name must be a string'
+    },
+    'point_store': {
+        'type': fields.Nested(point_store_fields),
         'required': False,
         'help': 'point_name must be a string'
     },

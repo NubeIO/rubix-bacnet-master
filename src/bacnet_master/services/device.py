@@ -332,7 +332,9 @@ class Device:
         multi_state_output = []
         multi_state_value = []
         points_list_name = {}
+        points_list_uuid = {}
         points_list = {}
+        point_uuid = None
         if object_list:
             for obj in object_list:
                 object_type = obj[0]
@@ -345,9 +347,11 @@ class Device:
                 object_type = point.point_object_type
                 point_object_id = point.point_object_id
                 point_name = point.point_name
+                point_uuid = point.point_uuid
                 key = f"{object_type.name}:{point_object_id}"
                 points_list[key] = ['objectName', 'presentValue']
                 points_list_name[key] = point_name
+                points_list_uuid[key] = point_uuid
 
         def chunk_dict(d, chunk_size):
             r = {}
@@ -365,7 +369,8 @@ class Device:
             _points_list = list(chunk_dict(points_list, 5))
 
         def payload(_list):
-            return {"point_object_id": _list[0], "point_name": _list[1], "point_value": _list[2]}
+            return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
+                    "point_value": _list[3]}
 
         _rpm = {}
         for key, value in enumerate(_points_list):
@@ -386,25 +391,26 @@ class Device:
                     object_name = _pnt[0][1]
                 else:
                     object_name = points_list_name.get(key)
+                    point_uuid = points_list_uuid.get(key)
                 present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
                 if object_type == ObjType.analogInput.name:  # AI
-                    analog_input.append(payload([point_object_id, object_name, present_value]))
+                    analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.analogOutput.name:  # AO
-                    analog_output.append(payload([point_object_id, object_name, present_value]))
+                    analog_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.analogValue.name:  # AV
-                    analog_value.append(payload([point_object_id, object_name, present_value]))
+                    analog_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.binaryInput.name:  # BI
-                    binary_input.append(payload([point_object_id, object_name, present_value]))
+                    binary_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.binaryOutput.name:  # BO
-                    binary_output.append(payload([point_object_id, object_name, present_value]))
+                    binary_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.binaryValue.name:  # BV
-                    binary_value.append(payload([point_object_id, object_name, present_value]))
+                    binary_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.multiStateInput.name:  # MI
-                    multi_state_input.append(payload([point_object_id, object_name, present_value]))
+                    multi_state_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.multiStateOutput.name:  # MO
-                    multi_state_output.append(payload([point_object_id, object_name, present_value]))
+                    multi_state_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.multiStateValue.name:  # MV
-                    multi_state_value.append(payload([point_object_id, object_name, present_value]))
+                    multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
         return {
             "discovered_points": {
                 "points": {
@@ -426,7 +432,57 @@ class Device:
             "existing_or_failed_points": {}
         }
 
-    def _build_point_list_non_rpm(self, device, get_point_name, get_point_value, object_list, **kwargs):
+    def _build_point_list_non_rpm_return(self, object_type, payload, point_uuid, point_object_id, object_name,
+                                         present_value):
+        analog_input = []
+        analog_output = []
+        analog_value = []
+        binary_input = []
+        binary_output = []
+        binary_value = []
+        multi_state_input = []
+        multi_state_output = []
+        multi_state_value = []
+        if object_type == ObjType.analogInput.name:  # AI
+            analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.analogOutput.name:  # AO
+            analog_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.analogValue.name:  # AV
+            analog_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.binaryInput.name:  # BI
+            binary_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.binaryOutput.name:  # BO
+            binary_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.binaryValue.name:  # BV
+            binary_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.multiStateInput.name:  # MI
+            multi_state_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.multiStateOutput.name:  # MO
+            multi_state_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        elif object_type == ObjType.multiStateValue.name:  # MV
+            multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+        return {
+            "discovered_points": {
+                "points": {
+                    "analog_input": analog_input,
+                    "analog_output": analog_output,
+                    "analog_value": analog_value,
+                    "binary_input": binary_input,
+                    "binary_output": binary_output,
+                    "binary_value": binary_value,
+                    "multi_state_input": multi_state_input,
+                    "multi_state_output": multi_state_output,
+                    "multi_state_value": multi_state_value,
+                }
+            },
+            "discovery_errors": {},
+            "added_points_count": 0,
+
+            "added_points": {},
+            "existing_or_failed_points": {}
+        }
+
+    def _build_point_list_non_rpm(self, device, get_point_name, get_point_value, object_list, points, **kwargs):
         network_instance = self._get_network_from_device(device)
         if not network_instance:
             return {"network_instance": "network instance is none"}
@@ -443,22 +499,107 @@ class Device:
         multi_state_value = []
         # object_list = []
         discovery_errors = []
+        # point_uuid = None
+        object_type = None
+        point_object_id = None
+        object_name = None
+        present_value = None
+        # object_instance = None
         obj_name = ObjProperty.objectName.name
         obj_present_value = ObjProperty.presentValue.name
         point_types = ["analogInput", "analogOutput", "analogValue", "binaryInput", "binaryOutput",
                        "binaryValue", "multiStateInput", "multiStateOutput", "multiStateValue"]
 
-        for obj in object_list:
-            object_type = obj[0]
-            object_instance = obj[1]
-            if object_type in point_types:
-                object_name = None
-                present_value = None
+        _return_points = {}
+        if object_list:
+            for obj in object_list:
+                object_type = obj[0]
                 point_object_id = obj[1]
+                if object_type in point_types:
+                    object_name = None
+                    present_value = None
+                    point_object_id = obj[1]
+                    if get_point_name:
+                        read = self.read_point_object(device, network_instance,
+                                                      object_type=object_type,
+                                                      object_instance=point_object_id,
+                                                      prop=obj_name,
+                                                      timeout=timeout)
+                        err = read.get("error")
+                        object_name = read.get("value")
+                        if err:
+                            name = f"{object_type}_{point_object_id}"
+                            object_name = name
+                            err = str(err)
+                            discovery_errors.append({name: err})
+
+                    if get_point_value:
+                        read = self.read_point_object(device, network_instance,
+                                                      object_type=object_type,
+                                                      object_instance=point_object_id,
+                                                      prop=obj_present_value,
+                                                      timeout=timeout)
+                        err = read.get("error")
+                        present_value = BACnetFunctions.clean_point_value(read.get("value"))
+                        if err:
+                            name = f"{object_type}_{point_object_id}_point_name"
+                            err = str(err)
+                            discovery_errors.append({name: err})
+
+                    def payload(_list):
+                        return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
+                                "point_value": _list[3]}
+
+                    point_uuid = None
+                    if object_type == ObjType.analogInput.name:  # AI
+                        analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.analogOutput.name:  # AO
+                        analog_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.analogValue.name:  # AV
+                        analog_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryInput.name:  # BI
+                        binary_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryOutput.name:  # BO
+                        binary_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryValue.name:  # BV
+                        binary_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateInput.name:  # MI
+                        multi_state_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateOutput.name:  # MO
+                        multi_state_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateValue.name:  # MV
+                        multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+
+            return {
+                "discovered_points": {
+                    "points": {
+                        "analog_input": analog_input,
+                        "analog_output": analog_output,
+                        "analog_value": analog_value,
+                        "binary_input": binary_input,
+                        "binary_output": binary_output,
+                        "binary_value": binary_value,
+                        "multi_state_input": multi_state_input,
+                        "multi_state_output": multi_state_output,
+                        "multi_state_value": multi_state_value,
+                    }
+                },
+                "discovery_errors": {},
+                "added_points_count": 0,
+
+                "added_points": {},
+                "existing_or_failed_points": {}
+            }
+        else:
+            for point in points:
+                object_type = point.point_object_type.name
+                point_object_id = point.point_object_id
+                point_name = point.point_name
+                point_uuid = point.point_uuid
                 if get_point_name:
                     read = self.read_point_object(device, network_instance,
                                                   object_type=object_type,
-                                                  object_instance=object_instance,
+                                                  object_instance=point_object_id,
                                                   prop=obj_name,
                                                   timeout=timeout)
                     err = read.get("error")
@@ -472,7 +613,7 @@ class Device:
                 if get_point_value:
                     read = self.read_point_object(device, network_instance,
                                                   object_type=object_type,
-                                                  object_instance=object_instance,
+                                                  object_instance=point_object_id,
                                                   prop=obj_present_value,
                                                   timeout=timeout)
                     err = read.get("error")
@@ -483,26 +624,28 @@ class Device:
                         discovery_errors.append({name: err})
 
                 def payload(_list):
-                    return {"point_object_id": _list[0], "point_name": object_name, "point_value": present_value}
+                    return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
+                            "point_value": _list[3]}
 
                 if object_type == ObjType.analogInput.name:  # AI
-                    analog_input.append(payload([point_object_id, object_name, present_value]))
+                    analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.analogOutput.name:  # AO
-                    analog_output.append(payload([point_object_id, object_name, present_value]))
+                    analog_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.analogValue.name:  # AV
-                    analog_value.append(payload([point_object_id, object_name, present_value]))
+                    analog_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.binaryInput.name:  # BI
-                    binary_input.append(payload([point_object_id, object_name, present_value]))
+                    binary_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.binaryOutput.name:  # BO
-                    binary_output.append(payload([point_object_id, object_name, present_value]))
+                    binary_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.binaryValue.name:  # BV
-                    binary_value.append(payload([point_object_id, object_name, present_value]))
+                    binary_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.multiStateInput.name:  # MI
-                    multi_state_input.append(payload([point_object_id, object_name, present_value]))
+                    multi_state_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.multiStateOutput.name:  # MO
-                    multi_state_output.append(payload([point_object_id, object_name, present_value]))
+                    multi_state_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.multiStateValue.name:  # MV
-                    multi_state_value.append(payload([point_object_id, object_name, present_value]))
+                    multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+
         return {
             "discovered_points": {
                 "points": {
@@ -544,7 +687,7 @@ class Device:
                                                address)
         else:
             return self._build_point_list_non_rpm(device, get_point_name,
-                                                  get_point_value, object_list)
+                                                  get_point_value, object_list, points)
 
     def build_point_list_new(self, device, **kwargs):
         network_instance = self._get_network_from_device(device)
