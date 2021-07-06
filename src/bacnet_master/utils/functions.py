@@ -510,7 +510,7 @@ class BACnetFunctions:
                 device_object_id = _list[3]
                 manufacture = _list[1]
                 if not _list[0]:
-                    device_name = f"dev_{device_object_id}_na_{Functions.make_uuid()[6:-6]}"
+                    device_name = f"dev_{device_object_id}_net_{network_number}"
                 else:
                     device_name = _list[0]
             except ValueError as e:
