@@ -596,9 +596,6 @@ class Device:
                 point_object_id = point.point_object_id
                 point_name = point.point_name
                 point_uuid = point.point_uuid
-                # print(111111)
-                # print(point_name, point_uuid)
-                # print(111111)
                 if get_point_name:
                     read = self.read_point_object(device, network_instance,
                                                   object_type=object_type,
