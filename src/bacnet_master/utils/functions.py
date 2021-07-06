@@ -437,7 +437,7 @@ class BACnetFunctions:
         device_ip = None
         network_number = 0
         device_mac = 0
-        device_name = None
+        device_name = f"no_name_{Functions.make_uuid()[4:-4]}"
         vendor_name = None
         device_object_id = None
         type_mstp = False
