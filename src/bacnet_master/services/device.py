@@ -364,9 +364,9 @@ class Device:
                 yield r
 
         if type_mstp:
-            _points_list = list(chunk_dict(points_list, 2))
+            _points_list = list(chunk_dict(points_list, 1))
         else:
-            _points_list = list(chunk_dict(points_list, 2))
+            _points_list = list(chunk_dict(points_list, 1))
 
         def payload(_list):
             return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
