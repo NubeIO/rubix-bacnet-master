@@ -43,8 +43,8 @@ class Network:
         try:
             network = BAC0.lite(ip=net_url, deviceId=network_device_object_id, localObjName=network_device_name)
             self.networks[net_url][network_device_object_id][network_device_name] = network
-        except:
-            logger.error("BACnet MASTER  Initialization error!")
+        except ValueError as e:
+            logger.error(f"BACnet MASTER  Initialization error! msg:{e}")
 
     def delete_network(self, network):
         net_url = f"{network.network_ip}/{network.network_mask}:{network.network_port}"

@@ -472,7 +472,9 @@ class BACnetFunctions:
                 logger.error(f"FUNCTION whois_split: {e}")
                 pass
             logger.info(
-                f"FUNCTION  whois_split:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
+                f"FUNCTION  whois_split:{device_name} device_ip{device_ip} device_port{device_port} "
+                f"network_number{network_number} type_mstp{type_mstp} "
+                f"device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
             return {
                 "vendor_name": vendor_name,
                 "device_name": device_name,
@@ -512,7 +514,9 @@ class BACnetFunctions:
                 logger.error(f"FUNCTION whois clean: {e}")
                 pass
             logger.info(
-                f"FUNCTION whois_split:{device_name} device_ip{device_ip} device_port{device_port} network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} ethernet_mac_address{ethernet_mac_address}")
+                f"FUNCTION whois_split:{device_name} device_ip{device_ip} device_port{device_port} "
+                f"network_number{network_number} type_mstp{type_mstp} device_mac:{device_mac} "
+                f"ethernet_mac_address{ethernet_mac_address}")
             return {
                 "vendor_name": vendor_name,
                 "device_name": device_name,
