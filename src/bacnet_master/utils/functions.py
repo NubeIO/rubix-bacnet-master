@@ -509,8 +509,10 @@ class BACnetFunctions:
                     device_mask = 0
                 device_object_id = _list[3]
                 manufacture = _list[1]
-                if _list[0] is None:
+                if not _list[0]:
                     device_name = f"dev_{device_object_id}_na_{Functions.make_uuid()[6:-6]}"
+                else:
+                    device_name = _list[0]
             except ValueError as e:
                 logger.error(f"FUNCTION whois clean: {e}")
                 pass
