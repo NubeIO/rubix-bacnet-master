@@ -587,6 +587,7 @@ class Device:
                             name = f"{object_type}_{point_object_id}"
                             object_name = name
                             err = str(err)
+                            logger.error(f"POLL-POINTS _build_point_list_non_rpm: read get_point_name error: {err}")
                             discovery_errors.append({name: err})
 
                     if get_point_value:
@@ -600,6 +601,7 @@ class Device:
                         if err:
                             name = f"{object_type}_{point_object_id}_point_name"
                             err = str(err)
+                            logger.error(f"POLL-POINTS _build_point_list_non_rpm: read present_value error: {err}")
                             discovery_errors.append({name: err})
 
                     def payload(_list):
