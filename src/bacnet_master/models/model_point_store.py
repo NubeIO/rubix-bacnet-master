@@ -33,9 +33,9 @@ class BACnetPointStoreModel(db.Model):
     def update_point_store(point_uuid: str, present_value: float):
         from src.bacnet_master.models.point import BacnetPointModel
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
-        point_name = point.point_name
-        points_store = BACnetPointStoreModel.find_by_point_uuid(point_uuid)
-        if point:
+        if point.point_name:
+            points_store = BACnetPointStoreModel.find_by_point_uuid(point_uuid)
+            point_name = point.point_name
             existing = points_store.present_value
             cov = point.cov or 0.1
             if not cov == 0:

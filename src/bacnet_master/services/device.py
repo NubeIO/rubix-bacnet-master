@@ -318,8 +318,123 @@ class Device:
                     "error": e
                 }
 
+    # def poll_points_list(self, device, **kwargs):
+    #     network_instance = self._get_network_from_device(device)
+    #     if not network_instance:
+    #         return {"network_instance": "network instance is none"}
+    #     object_list = kwargs.get('object_list')
+    #     timeout = kwargs.get('timeout')
+    #     points = device.points
+    #     points_list = {}
+    #     points_list_name = {}
+    #     analog_input = []
+    #     analog_output = []
+    #     analog_value = []
+    #     binary_input = []
+    #     binary_output = []
+    #     binary_value = []
+    #     multi_state_input = []
+    #     multi_state_output = []
+    #     multi_state_value = []
+    #     address = self.build_device_address(device)
+    #     device_name = device.device_name
+    #     type_mstp = device.type_mstp
+    #     if object_list:
+    #         for obj in object_list:
+    #             object_type = obj[0]
+    #             if PointObjType.check_is_point_type(object_type):
+    #                 # if object_type == ObjType.analogInput.name or object_type == ObjType.analogInput.name:
+    #                 point_object_id = obj[1]
+    #                 key = f"{object_type}:{point_object_id}"
+    #                 points_list[key] = ['objectName', 'presentValue']
+    #     else:
+    #         for point in points:
+    #             object_type = point.point_object_type
+    #             point_object_id = point.point_object_id
+    #             point_name = point.point_name
+    #             key = f"{object_type.name}:{point_object_id}"
+    #             points_list[key] = ['objectName', 'presentValue']
+    #             points_list_name[key] = point_name
+    #
+    #     def chunk_dict(d, chunk_size):
+    #         r = {}
+    #         for k, v in d.items():
+    #             if len(r) == chunk_size:
+    #                 yield r
+    #                 r = {}
+    #             r[k] = v
+    #         if r:
+    #             yield r
+    #
+    #     if type_mstp:
+    #         _points_list = list(chunk_dict(points_list, 2))
+    #     else:
+    #         _points_list = list(chunk_dict(points_list, 5))
+    #
+    #     def payload(_list):
+    #         return {"point_object_id": _list[0], "point_name": _list[1], "point_value": _list[2]}
+    #
+    #     for key, value in enumerate(_points_list):
+    #         _rpm = {'address': address,
+    #                 "objects": value
+    #                 }
+    #         r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
+    #         if isinstance(r, str):
+    #             logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
+    #         if isinstance(r, dict):
+    #             logger.info(f"POLL-POINTS readMultiple: address:{address} device_name:{device_name}")
+    #             for _key, rpm_points in enumerate(r):
+    #                 _pnt = r[rpm_points]
+    #                 object_type = rpm_points[0]
+    #                 point_object_id = rpm_points[1]
+    #                 key = f"{object_type}:{point_object_id}"
+    #                 if object_list:
+    #                     object_name = _pnt[0][1]
+    #                 else:
+    #                     object_name = points_list_name.get(key)
+    #                 present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
+    #                 if object_type == ObjType.analogInput.name:  # AI
+    #                     analog_input.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.analogOutput.name:  # AO
+    #                     analog_output.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.analogValue.name:  # AV
+    #                     analog_value.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.binaryInput.name:  # BI
+    #                     binary_input.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.binaryOutput.name:  # BO
+    #                     binary_output.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.binaryValue.name:  # BV
+    #                     binary_value.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.multiStateInput.name:  # MI
+    #                     multi_state_input.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.multiStateOutput.name:  # MO
+    #                     multi_state_output.append(payload([point_object_id, object_name, present_value]))
+    #                 elif object_type == ObjType.multiStateValue.name:  # MV
+    #                     multi_state_value.append(payload([point_object_id, object_name, present_value]))
+    #     return {
+    #         "discovered_points": {
+    #             "points": {
+    #                 "analog_input": analog_input,
+    #                 "analog_output": analog_output,
+    #                 "analog_value": analog_value,
+    #                 "binary_input": binary_input,
+    #                 "binary_output": binary_output,
+    #                 "binary_value": binary_value,
+    #                 "multi_state_input": multi_state_input,
+    #                 "multi_state_output": multi_state_output,
+    #                 "multi_state_value": multi_state_value,
+    #             }
+    #         },
+    #         "discovery_errors": {},
+    #         "added_points_count": 0,
+    #
+    #         "added_points": {},
+    #         "existing_or_failed_points": {}
+    #     }
+
     def _build_points_list_rpm(self, network_instance, timeout, device_name, object_list, points, type_mstp,
                                address) -> dict:
+        print("_build_points_list_rpm111111111111111111111111111111111111111111111")
         analog_input = []
         analog_output = []
         analog_value = []
@@ -333,7 +448,7 @@ class Device:
         points_list_uuid = {}
         points_list = {}
         point_uuid = None
-        count = None
+        count = 0
         from src import AppSetting
         from flask import current_app
         setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
@@ -355,98 +470,6 @@ class Device:
                     point_object_id = obj[1]
                     key = f"{object_type}:{point_object_id}"
                     points_list[key] = ['objectName', 'presentValue']
-
-                    def chunk_dict(d, chunk_size):
-                        r = {}
-                        for k, v in d.items():
-                            if len(r) == chunk_size:
-                                yield r
-                                r = {}
-                            r[k] = v
-                        if r:
-                            yield r
-
-                    if type_mstp:
-                        _points_list = list(chunk_dict(points_list, rpm_request_size_mstp_device))
-                    else:
-                        _points_list = list(chunk_dict(points_list, rpm_request_size_ip_device))
-
-                    def payload(_list):
-                        return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
-                                "point_value": _list[3]}
-
-                    _rpm = {}
-                    for key, value in enumerate(_points_list):
-                        _rpm = {'address': address,
-                                "objects": value
-                                }
-                    logger.info(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
-                    r = None
-                    try:
-                        r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
-                    except UnknownObjectError as e:
-                        logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {e}")
-                    if isinstance(r, str):
-                        logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
-                    if isinstance(r, dict):
-                        logger.info(f"POLL-POINTS readMultiple: address:{address} device_name:{device_name}")
-                        for _key, rpm_points in enumerate(r):
-                            _pnt = r[rpm_points]
-                            object_type = rpm_points[0]
-                            point_object_id = rpm_points[1]
-                            count = count + 1
-                            key = f"{object_type}:{point_object_id}"
-                            if object_list:
-                                object_name = _pnt[0][1]
-                            else:
-                                object_name = points_list_name.get(key)
-                                # point_uuid = points_list_uuid.get(key)
-                            present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
-                            logger.info(f"POLL-POINTS _build_points_list_rpm: read object_name:{object_name} "
-                                        f"object_type:{object_type} point_object_id:{point_object_id}")
-                            if object_type == ObjType.analogInput.name:  # AI
-                                analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.analogOutput.name:  # AO
-                                analog_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.analogValue.name:  # AV
-                                analog_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.binaryInput.name:  # BI
-                                binary_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.binaryOutput.name:  # BO
-                                binary_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.binaryValue.name:  # BV
-                                binary_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.multiStateInput.name:  # MI
-                                multi_state_input.append(
-                                    payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.multiStateOutput.name:  # MO
-                                multi_state_output.append(
-                                    payload([point_uuid, point_object_id, object_name, present_value]))
-                            elif object_type == ObjType.multiStateValue.name:  # MV
-                                multi_state_value.append(
-                                    payload([point_uuid, point_object_id, object_name, present_value]))
-            logger.info(f"POLL-POINTS _build_point_list_non_rpm: point COUNT:{count}")
-            return {
-                "discovered_points": {
-                    "points": {
-                        "analog_input": analog_input,
-                        "analog_output": analog_output,
-                        "analog_value": analog_value,
-                        "binary_input": binary_input,
-                        "binary_output": binary_output,
-                        "binary_value": binary_value,
-                        "multi_state_input": multi_state_input,
-                        "multi_state_output": multi_state_output,
-                        "multi_state_value": multi_state_value,
-                    }
-                },
-                "discovery_errors": {},
-                "added_points_count": 0,
-
-                "added_points": {},
-                "existing_or_failed_points": {}
-            }
-
         else:
             for point in points:
                 object_type = point.point_object_type
@@ -458,93 +481,97 @@ class Device:
                 points_list_name[key] = point_name
                 points_list_uuid[key] = point_uuid
 
-                def chunk_dict(d, chunk_size):
+        def chunk_dict(d, chunk_size):
+            r = {}
+            for k, v in d.items():
+                if len(r) == chunk_size:
+                    yield r
                     r = {}
-                    for k, v in d.items():
-                        if len(r) == chunk_size:
-                            yield r
-                            r = {}
-                        r[k] = v
-                    if r:
-                        yield r
+                r[k] = v
+            if r:
+                yield r
 
-                if type_mstp:
-                    _points_list = list(chunk_dict(points_list, rpm_request_size_mstp_device))
-                else:
-                    _points_list = list(chunk_dict(points_list, rpm_request_size_ip_device))
+        if type_mstp:
+            _points_list = list(chunk_dict(points_list, rpm_request_size_mstp_device))
+        else:
+            _points_list = list(chunk_dict(points_list, rpm_request_size_ip_device))
 
-                def payload(_list):
-                    return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
-                            "point_value": _list[3]}
+        def payload(_list):
+            return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
+                    "point_value": _list[3]}
 
-                _rpm = {}
-                for key, value in enumerate(_points_list):
-                    _rpm = {'address': address,
-                            "objects": value
-                            }
-                logger.info(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
-                r = None
-                try:
-                    r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
-                except UnknownObjectError as e:
-                    logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {e}")
-                if isinstance(r, str):
-                    logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
-                if isinstance(r, dict):
-                    for _key, rpm_points in enumerate(r):
-                        _pnt = r[rpm_points]
-                        object_type = rpm_points[0]
-                        point_object_id = rpm_points[1]
-                        key = f"{object_type}:{point_object_id}"
-                        count = count + 1
-                        if object_list:
-                            object_name = _pnt[0][1]
-                        else:
-                            object_name = points_list_name.get(key)
-                            point_uuid = points_list_uuid.get(key)
-                        present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
-                        logger.info(f"POLL-POINTS _build_points_list_rpm: read object_name:{object_name} "
-                                    f"object_type:{object_type} point_object_id:{point_object_id}")
-                        if object_type == ObjType.analogInput.name:  # AI
-                            analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.analogOutput.name:  # AO
-                            analog_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.analogValue.name:  # AV
-                            analog_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.binaryInput.name:  # BI
-                            binary_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.binaryOutput.name:  # BO
-                            binary_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.binaryValue.name:  # BV
-                            binary_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.multiStateInput.name:  # MI
-                            multi_state_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.multiStateOutput.name:  # MO
-                            multi_state_output.append(
-                                payload([point_uuid, point_object_id, object_name, present_value]))
-                        elif object_type == ObjType.multiStateValue.name:  # MV
-                            multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
-            logger.info(f"POLL-POINTS _build_point_list_non_rpm: point COUNT:{count}")
-            return {
-                "discovered_points": {
-                    "points": {
-                        "analog_input": analog_input,
-                        "analog_output": analog_output,
-                        "analog_value": analog_value,
-                        "binary_input": binary_input,
-                        "binary_output": binary_output,
-                        "binary_value": binary_value,
-                        "multi_state_input": multi_state_input,
-                        "multi_state_output": multi_state_output,
-                        "multi_state_value": multi_state_value,
+        _rpm = {}
+        print("_points_list", _points_list)
+        for key, value in enumerate(_points_list):
+            _rpm = {'address': address,
+                    "objects": value
                     }
-                },
-                "discovery_errors": {},
-                "added_points_count": 0,
+            logger.info(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
+            r = None
+            try:
+                r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
+            except UnknownObjectError as e:
+                logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {e}")
+            if isinstance(r, str):
+                logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
+            if isinstance(r, dict):
+                logger.info(f"POLL-POINTS readMultiple: address:{address} device_name:{device_name}")
+                for _key, rpm_points in enumerate(r):
+                    _pnt = r[rpm_points]
+                    object_type = rpm_points[0]
+                    point_object_id = rpm_points[1]
+                    count = count + 1
+                    key = f"{object_type}:{point_object_id}"
+                    if object_list:
+                        object_name = _pnt[0][1]
+                    else:
+                        object_name = points_list_name.get(key)
+                        point_uuid = points_list_uuid.get(key)
+                    present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
+                    logger.info(f"POLL-POINTS _build_points_list_rpm: read object_name:{object_name} "
+                                f"object_type:{object_type} point_object_id:{point_object_id}")
+                    if object_type == ObjType.analogInput.name:  # AI
+                        analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.analogOutput.name:  # AO
+                        analog_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.analogValue.name:  # AV
+                        analog_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryInput.name:  # BI
+                        binary_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryOutput.name:  # BO
+                        binary_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.binaryValue.name:  # BV
+                        binary_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateInput.name:  # MI
+                        multi_state_input.append(
+                            payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateOutput.name:  # MO
+                        multi_state_output.append(
+                            payload([point_uuid, point_object_id, object_name, present_value]))
+                    elif object_type == ObjType.multiStateValue.name:  # MV
+                        multi_state_value.append(
+                            payload([point_uuid, point_object_id, object_name, present_value]))
+        logger.info(f"POLL-POINTS _build_point_list_non_rpm: point COUNT:{count}")
+        return {
+            "discovered_points": {
+                "points": {
+                    "analog_input": analog_input,
+                    "analog_output": analog_output,
+                    "analog_value": analog_value,
+                    "binary_input": binary_input,
+                    "binary_output": binary_output,
+                    "binary_value": binary_value,
+                    "multi_state_input": multi_state_input,
+                    "multi_state_output": multi_state_output,
+                    "multi_state_value": multi_state_value,
+                }
+            },
+            "discovery_errors": {},
+            "added_points_count": 0,
 
-                "added_points": {},
-                "existing_or_failed_points": {}
-            }
+            "added_points": {},
+            "existing_or_failed_points": {}
+        }
 
     def _build_point_list_non_rpm(self, device, get_point_name, get_point_value, object_list, points, **kwargs):
         network_instance = self._get_network_from_device(device)
@@ -561,14 +588,12 @@ class Device:
         multi_state_input = []
         multi_state_output = []
         multi_state_value = []
-        # object_list = []
         discovery_errors = []
-        # point_uuid = None
-        object_type = None
-        point_object_id = None
-        object_name = None
+        # # point_uuid = None
+        # object_type = None
+        # point_object_id = None
+        # object_name = None
         present_value = None
-        # object_instance = None
         obj_name = ObjProperty.objectName.name
         obj_present_value = ObjProperty.presentValue.name
         point_types = ["analogInput", "analogOutput", "analogValue", "binaryInput", "binaryOutput",
@@ -585,6 +610,7 @@ class Device:
                     present_value = None
                     point_object_id = obj[1]
                     count = count + 1
+                    get_point_value = False
                     if get_point_name:
                         read = self.read_point_object(device, network_instance,
                                                       object_type=object_type,
@@ -600,19 +626,19 @@ class Device:
                             logger.error(f"POLL-POINTS _build_point_list_non_rpm: read get_point_name error: {err}")
                             discovery_errors.append({name: err})
 
-                    # if get_point_value:
-                    #     read = self.read_point_object(device, network_instance,
-                    #                                   object_type=object_type,
-                    #                                   object_instance=point_object_id,
-                    #                                   prop=obj_present_value,
-                    #                                   timeout=timeout)
-                    #     err = read.get("error")
-                    #     present_value = BACnetFunctions.clean_point_value(read.get("value"))
-                    #     if err:
-                    #         name = f"{object_type}_{point_object_id}_point_name"
-                    #         err = str(err)
-                    #         logger.error(f"POLL-POINTS _build_point_list_non_rpm: read present_value error: {err}")
-                    #         discovery_errors.append({name: err})
+                    if get_point_value:
+                        read = self.read_point_object(device, network_instance,
+                                                      object_type=object_type,
+                                                      object_instance=point_object_id,
+                                                      prop=obj_present_value,
+                                                      timeout=timeout)
+                        err = read.get("error")
+                        present_value = BACnetFunctions.clean_point_value(read.get("value"))
+                        if err:
+                            name = f"{object_type}_{point_object_id}_point_name"
+                            err = str(err)
+                            logger.error(f"POLL-POINTS _build_point_list_non_rpm: read present_value error: {err}")
+                            discovery_errors.append({name: err})
 
                     def payload(_list):
                         return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
@@ -665,23 +691,9 @@ class Device:
             for point in points:
                 object_type = point.point_object_type.name
                 point_object_id = point.point_object_id
-                point_name = point.point_name
+                object_name = point.point_name
                 point_uuid = point.point_uuid
                 count = count + 1
-                if get_point_name:
-                    read = self.read_point_object(device, network_instance,
-                                                  object_type=object_type,
-                                                  object_instance=point_object_id,
-                                                  prop=obj_name,
-                                                  timeout=timeout)
-                    err = read.get("error")
-                    object_name = read.get("value")
-                    if err:
-                        name = f"{object_type}_{point_object_id}"
-                        object_name = name
-                        err = str(err)
-                        discovery_errors.append({name: err})
-
                 if get_point_value:
                     read = self.read_point_object(device, network_instance,
                                                   object_type=object_type,
