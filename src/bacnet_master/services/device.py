@@ -377,7 +377,9 @@ class Device:
             _rpm = {'address': address,
                     "objects": value
                     }
+        logger.error(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
         r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
+        logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {r}")
         if isinstance(r, str):
             logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
         if isinstance(r, dict):
