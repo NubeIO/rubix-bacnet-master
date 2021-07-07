@@ -26,7 +26,7 @@ class BACnetSetting(BaseSetting):
     def __init__(self):
         self.enabled: bool = True
         self.master_enabled: bool = True
-        self.polling_enable: bool = True
+        self.polling_enable: bool = False
         self.polling_time_in_seconds = 5
         self.polling_time_between_devices = 5
         self.enable_point_store = False
