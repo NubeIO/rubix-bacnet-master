@@ -25,6 +25,7 @@ class BacnetDeviceModel(ModelBase):
     type_mstp = db.Column(db.Boolean())
     timeout = db.Column(db.Float(), unique=False, nullable=True)
     enable_polling = db.Column(db.Boolean(), unique=False, nullable=True)
+    fault = db.Column(db.Boolean(), unique=False, nullable=True)
     supports_rpm = db.Column(db.Boolean())
     supports_wpm = db.Column(db.Boolean())
     network_number = db.Column(db.Integer())

@@ -23,10 +23,12 @@ class Polling:
         setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
         mqtt_client = MqttClient()
         _delay = setting.bacnet.polling_time_between_devices
+        _delay_points = setting.bacnet.polling_time_between_points
         for network in networks:
             logger.info(f"POLLING LOOP ----------- POLLING----NETWORKS------- ")
             devices = network.devices
             network_name = network.network_name
+            network_uuid = network.network_uuid
             if devices:
                 for device in devices:
                     time.sleep(_delay)
@@ -48,21 +50,25 @@ class Polling:
                             mqtt_client.publish_value(('poll', topic), points_list)
                             logger.info(f"POLLING LOOP device_name:{device_name} ")
                         else:
-                            _points_list = point_values.get("discovered_points")
-                            _points_list = _points_list.get("points")
-                            for point_type in _points_list:
-                                point_type = _points_list.get(point_type)
-                                for point in point_type:
-                                    point_uuid = point.get("point_uuid")
-                                    point_value = point.get("point_value")
-                                    from src.bacnet_master.models.model_point_store import BACnetPointStoreModel
-                                    point_store = BACnetPointStoreModel.update_point_store(point_uuid, point_value)
-                                    if point_store:
-                                        point_name = point_store.get("point_name")
-                                        topic = f"{network_name}/{device_uuid}/{device_name}/{point_store.get(point_name)} "
-                                        points_list["device"] = {"device_name": device_name, "points": point_values}
-                                        mqtt_client.publish_value(('poll', topic), point_store)
-                                        # logger.info(f"POLLING LOOP device_name:{device_name} ")
+                            if point_values:
+                                _points_list = point_values.get("discovered_points")
+                                _points_list = _points_list.get("points")
+                                for point_type in _points_list:
+                                    point_type = _points_list.get(point_type)
+                                    for point in point_type:
+                                        point_uuid = point.get("point_uuid")
+                                        point_value = point.get("point_value")
+                                        from src.bacnet_master.models.model_point_store import BACnetPointStoreModel
+                                        point_store = BACnetPointStoreModel.update_point_store(point_uuid, point_value)
+                                        if point_store:
+                                            point_name = point_store.get("point_name")
+                                            point_uuid = point_store.get("point_uuid")
+                                            present_value = point_store.get("present_value")
+                                            topic = f"{network_uuid}/{network_name}/{device_uuid}/{device_name}/{point_uuid}/{point_name}"
+                                            time.sleep(_delay_points)
+                                            payload = {"device_name": device_name, "point_name": point_name, "value": present_value, "point_write_value": None,
+                                                       "ts": None, "enable": None, "fault": None}
+                                            mqtt_client.publish_value(('poll', topic), payload)
                     logger.info(f"POLLING LOOP ----------- FINISH----------- ")
                 else:
 

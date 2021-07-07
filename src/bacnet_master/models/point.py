@@ -51,9 +51,6 @@ class BacnetPointModel(ModelBase):
     def find_by_point_name(cls, point_name):
         return cls.query.filter_by(point_name=point_name).first()
 
-    @classmethod
-    def existing_name_on_patch(cls, point_name):
-        return cls.query.filter(BacnetPointModel.point_name == point_name).all()
 
     @classmethod
     def existing_name_on_add(cls, device_uuid, point_name):

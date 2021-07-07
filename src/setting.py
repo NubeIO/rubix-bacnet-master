@@ -29,6 +29,7 @@ class BACnetSetting(BaseSetting):
         self.polling_enable: bool = False
         self.polling_time_in_seconds = 5
         self.polling_time_between_devices = 5
+        self.polling_time_between_points = 0.1
         self.rpm_request_size_ip_device = 5
         self.rpm_request_size_mstp_device = 2
         self.enable_point_store = False

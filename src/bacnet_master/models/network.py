@@ -17,6 +17,7 @@ class BacnetNetworkModel(ModelBase):
     network_device_object_id = db.Column(db.Integer(), nullable=False)
     network_device_name = db.Column(db.String(80), nullable=False)
     enable_polling = db.Column(db.Boolean(), unique=False, nullable=True)
+    fault = db.Column(db.Boolean(), unique=False, nullable=True)
     devices = db.relationship('BacnetDeviceModel', cascade="all,delete", backref='network', lazy=True)
 
     def __repr__(self):

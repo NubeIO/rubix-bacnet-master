@@ -104,11 +104,13 @@ class Point(PointBase):
                 if not point_uuid == i.point_uuid:
                     raise NotFoundException(f"Point same Object Type and Object id exists id:{point_object_id}")
 
-        check_name: BacnetPointModel = BacnetPointModel.existing_name_on_patch(point_name)
+        check_name: BacnetPointModel = BacnetPointModel.existing_name_on_add(device_uuid, point_name)
         if check_name:
             if isinstance(check_name, list):
                 for i in check_name:
-                    if device_uuid == i.device_uuid:
+                    if not device_uuid == i.device_uuid:
+                        pass
+                    if point_uuid == i.point_uuid:
                         point.update(**data)
                         return point
                     else:
@@ -116,7 +118,6 @@ class Point(PointBase):
         else:
             point.update(**data)
             return point
-
 
     @classmethod
     def delete(cls, point_uuid):
