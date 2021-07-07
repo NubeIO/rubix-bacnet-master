@@ -1,4 +1,11 @@
 # CHANGELOG
+## [v1.0.0](https://github.com/NubeIO/rubix-bacnet-master/tree/v1.0.0) (2020-07-08)
+- First Relase considered stable
+- Added point store
+- point cov and publish on MQTT
+- removed bac0
+- added support for non rpm devices
+
 ## [v0.2.0](https://github.com/NubeIO/rubix-bacnet-master/tree/v0.2.0) (2020-06-29)
 - Upgrade rubix-registry for supporting wires-plat change
 
