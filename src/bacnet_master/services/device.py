@@ -590,25 +590,27 @@ class Device:
                             logger.error(f"POLL-POINTS _build_point_list_non_rpm: read get_point_name error: {err}")
                             discovery_errors.append({name: err})
 
-                    if get_point_value:
-                        read = self.read_point_object(device, network_instance,
-                                                      object_type=object_type,
-                                                      object_instance=point_object_id,
-                                                      prop=obj_present_value,
-                                                      timeout=timeout)
-                        err = read.get("error")
-                        present_value = BACnetFunctions.clean_point_value(read.get("value"))
-                        if err:
-                            name = f"{object_type}_{point_object_id}_point_name"
-                            err = str(err)
-                            logger.error(f"POLL-POINTS _build_point_list_non_rpm: read present_value error: {err}")
-                            discovery_errors.append({name: err})
+                    # if get_point_value:
+                    #     read = self.read_point_object(device, network_instance,
+                    #                                   object_type=object_type,
+                    #                                   object_instance=point_object_id,
+                    #                                   prop=obj_present_value,
+                    #                                   timeout=timeout)
+                    #     err = read.get("error")
+                    #     present_value = BACnetFunctions.clean_point_value(read.get("value"))
+                    #     if err:
+                    #         name = f"{object_type}_{point_object_id}_point_name"
+                    #         err = str(err)
+                    #         logger.error(f"POLL-POINTS _build_point_list_non_rpm: read present_value error: {err}")
+                    #         discovery_errors.append({name: err})
 
                     def payload(_list):
                         return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
                                 "point_value": _list[3]}
 
                     point_uuid = None
+                    logger.info(f"POLL-POINTS _build_point_list_non_rpm: read object_name:{object_name} "
+                                f"object_type:{object_type} point_object_id:{point_object_id}")
                     if object_type == ObjType.analogInput.name:  # AI
                         analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                     elif object_type == ObjType.analogOutput.name:  # AO
