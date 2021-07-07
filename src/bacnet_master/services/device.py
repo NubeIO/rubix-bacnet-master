@@ -682,6 +682,7 @@ class Device:
         supports_rpm = device.supports_rpm
         get_point_name = True
         get_point_value = True
+        logger.error(f"POLL-POINTS poll_points_list: address:{address} supports_rpm:{supports_rpm}")
         if supports_rpm:
             return self._build_points_list_rpm(network_instance, timeout,
                                                device_name, object_list,
