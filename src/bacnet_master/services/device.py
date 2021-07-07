@@ -333,6 +333,7 @@ class Device:
         points_list_uuid = {}
         points_list = {}
         point_uuid = None
+        count = None
         from src import AppSetting
         from flask import current_app
         setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
@@ -393,13 +394,16 @@ class Device:
                             _pnt = r[rpm_points]
                             object_type = rpm_points[0]
                             point_object_id = rpm_points[1]
+                            count = count + 1
                             key = f"{object_type}:{point_object_id}"
                             if object_list:
                                 object_name = _pnt[0][1]
                             else:
                                 object_name = points_list_name.get(key)
-                                point_uuid = points_list_uuid.get(key)
+                                # point_uuid = points_list_uuid.get(key)
                             present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
+                            logger.info(f"POLL-POINTS _build_points_list_rpm: read object_name:{object_name} "
+                                        f"object_type:{object_type} point_object_id:{point_object_id}")
                             if object_type == ObjType.analogInput.name:  # AI
                                 analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                             elif object_type == ObjType.analogOutput.name:  # AO
@@ -421,6 +425,7 @@ class Device:
                             elif object_type == ObjType.multiStateValue.name:  # MV
                                 multi_state_value.append(
                                     payload([point_uuid, point_object_id, object_name, present_value]))
+            logger.info(f"POLL-POINTS _build_point_list_non_rpm: point COUNT:{count}")
             return {
                 "discovered_points": {
                     "points": {
@@ -486,18 +491,20 @@ class Device:
                 if isinstance(r, str):
                     logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
                 if isinstance(r, dict):
-                    logger.info(f"POLL-POINTS readMultiple: address:{address} device_name:{device_name}")
                     for _key, rpm_points in enumerate(r):
                         _pnt = r[rpm_points]
                         object_type = rpm_points[0]
                         point_object_id = rpm_points[1]
                         key = f"{object_type}:{point_object_id}"
+                        count = count + 1
                         if object_list:
                             object_name = _pnt[0][1]
                         else:
                             object_name = points_list_name.get(key)
                             point_uuid = points_list_uuid.get(key)
                         present_value = BACnetFunctions.clean_point_value(_pnt[1][1])
+                        logger.info(f"POLL-POINTS _build_points_list_rpm: read object_name:{object_name} "
+                                    f"object_type:{object_type} point_object_id:{point_object_id}")
                         if object_type == ObjType.analogInput.name:  # AI
                             analog_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                         elif object_type == ObjType.analogOutput.name:  # AO
@@ -517,6 +524,7 @@ class Device:
                                 payload([point_uuid, point_object_id, object_name, present_value]))
                         elif object_type == ObjType.multiStateValue.name:  # MV
                             multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
+            logger.info(f"POLL-POINTS _build_point_list_non_rpm: point COUNT:{count}")
             return {
                 "discovered_points": {
                     "points": {
@@ -567,6 +575,7 @@ class Device:
                        "binaryValue", "multiStateInput", "multiStateOutput", "multiStateValue"]
 
         _return_points = {}
+        count = 0
         if object_list:
             for obj in object_list:
                 object_type = obj[0]
@@ -575,6 +584,7 @@ class Device:
                     object_name = None
                     present_value = None
                     point_object_id = obj[1]
+                    count = count + 1
                     if get_point_name:
                         read = self.read_point_object(device, network_instance,
                                                       object_type=object_type,
@@ -630,6 +640,7 @@ class Device:
                     elif object_type == ObjType.multiStateValue.name:  # MV
                         multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
 
+            logger.info(f"POLL-POINTS _build_point_list_non_rpm: point COUNT:{count}")
             return {
                 "discovered_points": {
                     "points": {
@@ -656,6 +667,7 @@ class Device:
                 point_object_id = point.point_object_id
                 point_name = point.point_name
                 point_uuid = point.point_uuid
+                count = count + 1
                 if get_point_name:
                     read = self.read_point_object(device, network_instance,
                                                   object_type=object_type,
@@ -705,7 +717,7 @@ class Device:
                     multi_state_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
                 elif object_type == ObjType.multiStateValue.name:  # MV
                     multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
-
+        logger.info(f"POLL-POINTS _build_point_list_non_rpm: point COUNT:{count}")
         return {
             "discovered_points": {
                 "points": {
