@@ -12,8 +12,11 @@ class BacnetPointModel(ModelBase):
     point_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     point_object_id = db.Column(db.Integer(), unique=False, nullable=False)
     point_object_type = db.Column(db.Enum(ObjType), unique=False, nullable=False)
-    point_writable = db.Column(db.Boolean())
+    point_writable = db.Column(db.Boolean(), unique=False, nullable=True)
+    fault = db.Column(db.Boolean(), unique=False, nullable=True)
     cov = db.Column(db.Float(), unique=False, nullable=True)
+    timeout = db.Column(db.Float(), unique=False, nullable=True)
+    enable_polling = db.Column(db.Boolean(), unique=False, nullable=True)
     device_uuid = db.Column(db.String, db.ForeignKey('bacnet_devices.device_uuid'))
     priority_array_write = db.relationship('PriorityArrayModel', backref='point', lazy=False, uselist=False,
                                            cascade="all,delete")

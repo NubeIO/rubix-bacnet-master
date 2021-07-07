@@ -4,6 +4,7 @@ from src import db
 
 logger = logging.getLogger(__name__)
 
+
 class BACnetPointStoreModel(db.Model):
     __tablename__ = 'bacnet_points_store'
     point_uuid = db.Column(db.String, db.ForeignKey('bacnet_points.point_uuid'), primary_key=True, nullable=False)
@@ -32,6 +33,7 @@ class BACnetPointStoreModel(db.Model):
     def update_point_store(point_uuid: str, present_value: float):
         from src.bacnet_master.models.point import BacnetPointModel
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
+        point_name = point.point_name
         points_store = BACnetPointStoreModel.find_by_point_uuid(point_uuid)
         if point:
             existing = points_store.present_value
@@ -39,11 +41,18 @@ class BACnetPointStoreModel(db.Model):
             if not cov == 0:
                 check_for_cov = BACnetPointStoreModel()._check_cov(present_value, existing, cov)
                 if check_for_cov[0]:
-                    logger.info(f"UPDATED POINT STORE point_name:{point.point_name} present_value{present_value} existing{existing} cov:{cov}")
+                    logger.info(
+                        f"UPDATED POINT STORE point_name:{point_name} present_value{present_value} existing{existing} cov:{cov}")
                     points_store.present_value = present_value
                     db.session.commit()
+                    return {
+                        "present_value": present_value,
+                        "point_uuid": point_uuid,
+                        "point_name": point_name
+                    }
                 else:
-                    logger.info(f"DID NOT UPDATE POINT STORE point_name:{point.point_name} present_value{present_value} existing{existing} cov:{cov}")
+                    logger.info(
+                        f"DID NOT UPDATE POINT STORE point_name:{point.point_name} present_value{present_value} existing{existing} cov:{cov}")
         else:
             logger.info(
                 f"DID NOT UPDATE POINT STORE point_uuid:{point_uuid} dosnt exists")

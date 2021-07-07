@@ -2,7 +2,6 @@ import logging
 import time
 import polling2
 
-
 from src.bacnet_master.resources.network import Network
 from src.bacnet_master.resources.network_whois import poll_points_rpm
 
@@ -19,10 +18,10 @@ class Polling:
         timeout = 1
         networks = Network.get_networks()
         logger.info(f"POLLING LOOP ----------- POLLING----START------- ")
-        mqtt_client = MqttClient()
         from flask import current_app
         from src import AppSetting
         setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
+        mqtt_client = MqttClient()
         _delay = setting.bacnet.polling_time_between_devices
         for network in networks:
             logger.info(f"POLLING LOOP ----------- POLLING----NETWORKS------- ")
@@ -57,7 +56,13 @@ class Polling:
                                     point_uuid = point.get("point_uuid")
                                     point_value = point.get("point_value")
                                     from src.bacnet_master.models.model_point_store import BACnetPointStoreModel
-                                    BACnetPointStoreModel.update_point_store(point_uuid, point_value)
+                                    point_store = BACnetPointStoreModel.update_point_store(point_uuid, point_value)
+                                    if point_store:
+                                        point_name = point_store.get("point_name")
+                                        topic = f"{network_name}/{device_uuid}/{device_name}/{point_store.get(point_name)} "
+                                        points_list["device"] = {"device_name": device_name, "points": point_values}
+                                        mqtt_client.publish_value(('poll', topic), point_store)
+                                        # logger.info(f"POLLING LOOP device_name:{device_name} ")
                     logger.info(f"POLLING LOOP ----------- FINISH----------- ")
                 else:
 
@@ -72,9 +77,9 @@ class Polling:
         from src import AppSetting
         from flask import current_app
         setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
-        enable_polling = setting.bacnet.polling_enable
-        polling_time = setting.bacnet.polling_time_in_seconds
-        enable_point_store = setting.bacnet.enable_point_store
+        enable_polling = setting.bacnet.polling_enable or False
+        polling_time = setting.bacnet.polling_time_in_seconds or 5
+        enable_point_store = setting.bacnet.enable_point_store or False
         if polling_time <= 0:
             polling_time = 1
         if enable_polling:

@@ -86,7 +86,9 @@ def poll_points_rpm(**kwargs):
             object_list = DeviceService.get_instance().build_point_list_new(device)
             logger.info(f"POLL-POINTS returned object_list{object_list}")
             if not isinstance(object_list, list):
-                logger.error(f"POLL-POINTS discovery:{device.device_name} error:{object_list}")
+                error = object_list.get("error")
+                logger.error(f"POLL-POINTS discovery:{device.device_name} error:{error}")
+                return error
             else:
                 points = DeviceService.get_instance().poll_points_list(device, object_list=object_list, timeout=timeout)
                 logger.info(f"POLL-POINTS returned points{points}")
@@ -122,8 +124,9 @@ class DeviceAllPoints(RubixResource):
         add_points = data.get('add_points')
         discovery = data.get('discovery')
         timeout = BACnetFunctions.validate_timeout(data.get('timeout'))
-        return poll_points_rpm(device_uuid=device_uuid,
-                               discovery=discovery,
-                               add_points=add_points,
-                               timeout=timeout
-                               )
+        r = poll_points_rpm(device_uuid=device_uuid,
+                            discovery=discovery,
+                            add_points=add_points,
+                            timeout=timeout
+                            )
+        return r

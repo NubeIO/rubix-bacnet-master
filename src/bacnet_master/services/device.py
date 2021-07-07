@@ -257,7 +257,28 @@ class Device:
             }
         except UnknownObjectError as e:
             logger.error(
-                f"UnknownObjectError: {e}")
+                f"UnknownObjectError: read_point_object {e}")
+            return {
+                "value": None,
+                "error": e
+            }
+        except UnknownPropertyError as e:
+            logger.error(
+                f"UnknownPropertyError: read_point_object {e}")
+            return {
+                "value": None,
+                "error": e
+            }
+        except NoResponseFromController as e:
+            logger.error(
+                f"NoResponseFromController: read_point_object {e}")
+            return {
+                "value": None,
+                "error": e
+            }
+        except Exception as e:
+            logger.error(
+                f"Exception: read_point_object {e}")
             return {
                 "value": None,
                 "error": e
@@ -297,29 +318,6 @@ class Device:
                     "error": e
                 }
 
-    def read_point_object_rpm(self, device, network_instance, **kwargs) -> dict:
-        object_instance = kwargs.get('object_instance')
-        object_type = kwargs.get('object_type')
-        prop = kwargs.get('prop')
-        timeout = BACnetFunctions.validate_timeout(kwargs.get('timeout'))
-        try:
-            value = network_instance.readMultiple(
-                self._common_object(device,
-                                    object_type=object_type,
-                                    object_instance=object_instance,
-                                    prop=prop), timeout=timeout)
-            return {
-                "value": value,
-                "error": None
-
-            }
-        except UnknownObjectError as e:
-            logger.error(f"UnknownObjectError: {e}")
-            return {
-                "value": None,
-                "error": e
-            }
-
     def _build_points_list_rpm(self, network_instance, timeout, device_name, object_list, points, type_mstp,
                                address) -> dict:
         analog_input = []
@@ -335,6 +333,20 @@ class Device:
         points_list_uuid = {}
         points_list = {}
         point_uuid = None
+        from src import AppSetting
+        from flask import current_app
+        setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
+        rpm_request_size_ip_device = setting.bacnet.rpm_request_size_ip_device or 5
+        rpm_request_size_mstp_device = setting.bacnet.rpm_request_size_mstp_device or 2
+        if rpm_request_size_ip_device <= 0:
+            rpm_request_size_ip_device = 2
+        if rpm_request_size_ip_device >= 10:
+            rpm_request_size_ip_device = 5
+        if rpm_request_size_mstp_device <= 0:
+            rpm_request_size_mstp_device = 2
+        if rpm_request_size_mstp_device >= 5:
+            rpm_request_size_mstp_device = 2
+
         if object_list:
             for obj in object_list:
                 object_type = obj[0]
@@ -354,9 +366,9 @@ class Device:
                             yield r
 
                     if type_mstp:
-                        _points_list = list(chunk_dict(points_list, 2))
+                        _points_list = list(chunk_dict(points_list, rpm_request_size_mstp_device))
                     else:
-                        _points_list = list(chunk_dict(points_list, 4))
+                        _points_list = list(chunk_dict(points_list, rpm_request_size_ip_device))
 
                     def payload(_list):
                         return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
@@ -367,9 +379,12 @@ class Device:
                         _rpm = {'address': address,
                                 "objects": value
                                 }
-                    logger.error(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
-                    r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
-                    logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {r}")
+                    logger.info(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
+                    r = None
+                    try:
+                        r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
+                    except UnknownObjectError as e:
+                        logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {e}")
                     if isinstance(r, str):
                         logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
                     if isinstance(r, dict):
@@ -449,9 +464,9 @@ class Device:
                         yield r
 
                 if type_mstp:
-                    _points_list = list(chunk_dict(points_list, 2))
+                    _points_list = list(chunk_dict(points_list, rpm_request_size_mstp_device))
                 else:
-                    _points_list = list(chunk_dict(points_list, 4))
+                    _points_list = list(chunk_dict(points_list, rpm_request_size_ip_device))
 
                 def payload(_list):
                     return {"point_uuid": _list[0], "point_object_id": _list[1], "point_name": _list[2],
@@ -462,9 +477,12 @@ class Device:
                     _rpm = {'address': address,
                             "objects": value
                             }
-                logger.error(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
-                r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
-                logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {r}")
+                logger.info(f"POLL-POINTS readMultiple: SENT dict to BAC0: {_rpm}")
+                r = None
+                try:
+                    r = network_instance.readMultiple(address, request_dict=_rpm, timeout=timeout)
+                except UnknownObjectError as e:
+                    logger.error(f"POLL-POINTS readMultiple: RETURNED dict from BAC0: {e}")
                 if isinstance(r, str):
                     logger.error(f"POLL-POINTS readMultiple: was empty address:{address} device_name:{device_name}")
                 if isinstance(r, dict):
@@ -495,7 +513,8 @@ class Device:
                         elif object_type == ObjType.multiStateInput.name:  # MI
                             multi_state_input.append(payload([point_uuid, point_object_id, object_name, present_value]))
                         elif object_type == ObjType.multiStateOutput.name:  # MO
-                            multi_state_output.append(payload([point_uuid, point_object_id, object_name, present_value]))
+                            multi_state_output.append(
+                                payload([point_uuid, point_object_id, object_name, present_value]))
                         elif object_type == ObjType.multiStateValue.name:  # MV
                             multi_state_value.append(payload([point_uuid, point_object_id, object_name, present_value]))
             return {
@@ -518,8 +537,6 @@ class Device:
                 "added_points": {},
                 "existing_or_failed_points": {}
             }
-
-
 
     def _build_point_list_non_rpm(self, device, get_point_name, get_point_value, object_list, points, **kwargs):
         network_instance = self._get_network_from_device(device)
