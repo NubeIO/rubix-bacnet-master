@@ -1,4 +1,7 @@
 # CHANGELOG
+## [v1.0.1](https://github.com/NubeIO/rubix-bacnet-master/tree/v1.0.1) (2020-07-08)
+- Add backin BAC0
+
 ## [v1.0.0](https://github.com/NubeIO/rubix-bacnet-master/tree/v1.0.0) (2020-07-08)
 - First Relase considered stable
 - Added point store
