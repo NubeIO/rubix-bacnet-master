@@ -1,4 +1,7 @@
 # CHANGELOG
+## [v1.0.2](https://github.com/NubeIO/rubix-bacnet-master/tree/v1.0.2) (2020-07-08)
+- Add in defult point cov in config file
+
 ## [v1.0.1](https://github.com/NubeIO/rubix-bacnet-master/tree/v1.0.1) (2020-07-08)
 - Add backin BAC0
 
