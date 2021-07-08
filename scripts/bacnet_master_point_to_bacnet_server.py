@@ -5,7 +5,7 @@ import requests
 
 CWD = os.getcwd()
 file = f"{CWD}/wires-plat-bacnet-master-network-export.json"
-host = '123.209.71.183'
+host = '123.209.194.160'
 port = '1717'
 url = f'http://{host}:{port}/api/bacnet/points'
 
@@ -16,7 +16,7 @@ def clean_string(val: str) -> str:
     return val
 
 
-test_run = True
+test_run = False
 count = 0
 with open(file) as json_file:
     data = json.load(json_file)

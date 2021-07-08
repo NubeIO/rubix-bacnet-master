@@ -6,6 +6,7 @@
     "polling_time_between_devices": 10,
     "rpm_request_size_ip_device": 5,
     "rpm_request_size_mstp_device": 2,
+    "default_point_cov": 0.5,
     "ip": "192.168.15.10",
     "port": 47808,
     "device_id": 2508,

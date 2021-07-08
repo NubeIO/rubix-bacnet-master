@@ -35,10 +35,26 @@ class BACnetPointStoreModel(db.Model):
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
         if point.point_name:
             points_store = BACnetPointStoreModel.find_by_point_uuid(point_uuid)
+            from flask import current_app
+            from src import AppSetting
+            setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
             point_name = point.point_name
             existing = points_store.present_value
-            cov = point.cov or 0.1
-            if not cov == 0:
+            if not point.cov:
+                cov = setting.bacnet.default_point_cov
+            else:
+                cov = point.cov or 0.1
+            if cov <= 0:
+                logger.info(
+                    f"UPDATED POINT STORE  WHEN COV IS AT 0 point_name:{point_name} present_value{present_value} existing{existing} cov:{cov}")
+                points_store.present_value = present_value
+                db.session.commit()
+                return {
+                        "present_value": present_value,
+                        "point_uuid": point_uuid,
+                        "point_name": point_name
+                    }
+            else:
                 check_for_cov = BACnetPointStoreModel()._check_cov(present_value, existing, cov)
                 if check_for_cov[0]:
                     logger.info(
