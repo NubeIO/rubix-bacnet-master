@@ -32,6 +32,11 @@ class BACnetSetting(BaseSetting):
         self.polling_time_between_points = 0.1
         self.rpm_request_size_ip_device = 5
         self.rpm_request_size_mstp_device = 2
+        self.enable_naming_clean_text = True
+        self.naming_nube_dash_convention = False
+        self.naming_nube_underscore_convention = True
+        self.naming_to_upper = True
+        self.naming_to_lower = False
         self.enable_point_store = False
         self.default_point_cov = 0.2
         self.ip = '192.168.15.10'

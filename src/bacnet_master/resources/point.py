@@ -2,6 +2,7 @@ from flask_restful import reqparse, marshal_with
 from rubix_http.exceptions.exception import NotFoundException, BadDataException
 from rubix_http.resource import RubixResource
 
+from src.bacnet_master.helpers.clean_names import CleanStrings
 from src.bacnet_master.models.point import BacnetPointModel
 from src.bacnet_master.resources.rest_schema.schema_point import point_all_attributes, point_all_fields, \
     point_extra_attributes
@@ -27,6 +28,28 @@ class PointBase(RubixResource):
                                  help=all_attributes[attr].get('help', None),
                                  store_missing=False)
 
+    @staticmethod
+    def name_clean(point_name):
+        from flask import current_app
+        from src import AppSetting
+        setting: AppSetting = current_app.config[AppSetting.FLASK_KEY]
+        enable_naming_clean_text = setting.bacnet.enable_naming_clean_text
+        if enable_naming_clean_text:
+            naming_nube_dash_convention = setting.bacnet.naming_nube_dash_convention
+            naming_nube_underscore_convention = setting.bacnet.naming_nube_underscore_convention
+            naming_to_upper = setting.bacnet.naming_to_upper
+            naming_to_lower = setting.bacnet.naming_to_lower
+            if naming_nube_dash_convention:
+                return CleanStrings().nube_dash_convention(point_name,
+                                                           to_upper=naming_to_upper,
+                                                           to_lower=naming_to_lower)
+            if naming_nube_underscore_convention:
+                return CleanStrings().nube_underscore_convention(point_name,
+                                                                 to_upper=naming_to_upper,
+                                                                 to_lower=naming_to_lower)
+        else:
+            return point_name
+
 
 class AddPoint(PointBase):
     parser_patch = reqparse.RequestParser()
@@ -45,6 +68,8 @@ class AddPoint(PointBase):
         point_object_type = data.get("point_object_type")
         device_uuid = data.get("device_uuid")
         priority_array_write: dict = {}
+        point_name = PointBase.name_clean(point_name)
+        data.point_name = point_name
         check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid, point_object_id,
                                                                                 point_object_type)
         if check_object_id:
@@ -96,6 +121,8 @@ class Point(PointBase):
         point_object_id = data.get("point_object_id")
         point_object_type = data.get("point_object_type")
         device_uuid = data.get("device_uuid")
+        point_name = PointBase.name_clean(point_name)
+        data.point_name = point_name
         check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid,
                                                                                 point_object_id,
                                                                                 point_object_type)

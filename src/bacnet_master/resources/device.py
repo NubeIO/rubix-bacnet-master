@@ -4,6 +4,7 @@ from rubix_http.exceptions.exception import NotFoundException, BadDataException
 from rubix_http.resource import RubixResource
 from src.bacnet_master.models.device import BacnetDeviceModel
 from src.bacnet_master.models.network import BacnetNetworkModel
+from src.bacnet_master.resources.point import PointBase
 from src.bacnet_master.resources.rest_schema.schema_device import device_all_attributes, device_all_fields, \
     device_extra_attributes
 from src.bacnet_master.services.device import Device as DeviceService
@@ -50,6 +51,9 @@ class AddDevice(DeviceBase):
         device_mac = data.get("device_mac")
         type_mstp = data.get("type_mstp")
         network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
+        device_name = data.get("device_name")
+        device_name = PointBase.name_clean(device_name)
+        data.device_name = device_name
         if not network:
             raise NotFoundException("Network not found")
         network_number = data.get("network_number")
@@ -95,6 +99,9 @@ class Device(DeviceBase):
     def put(cls, device_uuid):
         data = Device.parser.parse_args()
         device: BacnetDeviceModel = BacnetDeviceModel.find_by_device_uuid(device_uuid)
+        device_name = data.get("device_name")
+        device_name = PointBase.name_clean(device_name)
+        data.device_name = device_name
         if device is None:
             device = Device.create_device_model_obj(device_uuid, data)
             device.save_to_db()
@@ -109,6 +116,9 @@ class Device(DeviceBase):
         device: BacnetDeviceModel = BacnetDeviceModel.find_by_device_uuid(device_uuid)
         if device is None:
             raise NotFoundException("Device not found")
+        device_name = data.get("device_name")
+        device_name = PointBase.name_clean(device_name)
+        data.device_name = device_name
         device.update(**data)
         return device
 
