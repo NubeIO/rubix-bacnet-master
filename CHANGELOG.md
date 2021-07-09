@@ -1,4 +1,7 @@
 # CHANGELOG
+## [v1.0.3](https://github.com/NubeIO/rubix-bacnet-master/tree/v1.0.3) (2020-07-09)
+- Add namining convention
+
 ## [v1.0.2](https://github.com/NubeIO/rubix-bacnet-master/tree/v1.0.2) (2020-07-08)
 - Add in defult point cov in config file
 
