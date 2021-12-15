@@ -5,7 +5,7 @@ import requests
 
 CWD = os.getcwd()
 file = f"{CWD}/wires-plat-bacnet-master-network-export.json"
-host = '123.209.194.160'
+host = '123.209.127.126'
 port = '1717'
 url = f'http://{host}:{port}/api/bacnet/points'
 
