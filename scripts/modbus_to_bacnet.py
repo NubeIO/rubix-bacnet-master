@@ -32,8 +32,6 @@ with open(bacnet_file) as f1, open(modbus_file) as f2:
                         "point_uuid": uuid,
                         "mapped_point_uuid": bacnet_uuid,
                         "type": "BACNET"
-                        # "modbus_point_name": point_name,
-                        # "bacnet_point_name": object_name
                     }
                     print(body)
                     if not test_run:
@@ -44,4 +42,6 @@ with open(bacnet_file) as f1, open(modbus_file) as f2:
                         print(result.status_code)
                         print(result.json)
                     # print(body)
+
 print(count)
+
