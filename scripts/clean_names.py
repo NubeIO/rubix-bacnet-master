@@ -84,14 +84,3 @@ def remove_back_underscore(text: str) -> str:
 
 names = ["FCU A & B","Whats up in @ustralia",  "FCU!#!@ 1 Start/Stop", "  FCU 1!@#/A ", "_FCU!@# 1/A ",
          "FCU'1!@", "FCU 1\A ", "__FCU 1\A_ ", "FCU_1_A", "FCU1", "FCUA1_L1_"]
-
-
-for i in names:
-    out = remove_leading_whitespace(i)
-    out = replace_and(out)
-    out = remove_all_characters(out)
-    out = remove_double_whitespace(out)
-    out = replace_white_underscore(out)
-    out = remove_front_underscore(out)
-    out = remove_back_underscore(out)
-    print(out)
