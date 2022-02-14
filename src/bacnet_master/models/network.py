@@ -13,7 +13,7 @@ class BacnetNetworkModel(ModelBase):
     network_uuid = db.Column(db.String(80), primary_key=True, nullable=False)
     network_ip = db.Column(db.String(20), unique=False, nullable=False)
     network_mask = db.Column(db.Integer(), nullable=False)
-    network_port = db.Column(db.Integer(), nullable=False)
+    network_port = db.Column(db.Integer(), unique=False, nullable=True)
     network_device_object_id = db.Column(db.Integer(), nullable=False)
     network_device_name = db.Column(db.String(80), nullable=False)
     enable_polling = db.Column(db.Boolean(), unique=False, nullable=True)

@@ -45,7 +45,7 @@ class AddDevice(DeviceBase):
     @classmethod
     @marshal_with(device_all_fields)
     def put(cls):
-        device_uuid = Functions.make_uuid()
+        device_uuid = "dev_"+Functions.make_uuid()
         data = Device.parser.parse_args()
         network_uuid = data.get("network_uuid")
         device_mac = data.get("device_mac")
@@ -129,7 +129,7 @@ class Device(DeviceBase):
             raise NotFoundException("Device not found")
         if device:
             device.delete_from_db()
-            return {"message": f"pass"}, 204
+            return {"message": f"pass"}, 200
         else:
             return {"message": "failed to delete"}, 404
 

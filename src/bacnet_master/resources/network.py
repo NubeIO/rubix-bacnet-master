@@ -45,7 +45,7 @@ class AddNetwork(NetworkBase):
     @classmethod
     @marshal_with(network_all_fields)
     def put(cls):
-        network_uuid = Functions.make_uuid()
+        network_uuid = "net_"+Functions.make_uuid()
         data = Network.parser.parse_args()
         network = BacnetNetworkModel.find_by_network_uuid(network_uuid)
         if network is None:
@@ -102,7 +102,9 @@ class Network(NetworkBase):
         if network:
             network.delete_from_db()
             NetworkService.get_instance().delete_network(network)
-        return '', 204
+            return {"message": f"pass"}, 200
+        else:
+            return {"message": "failed to delete"}, 404
 
     @staticmethod
     def create_network_model_obj(network_uuid, data):

@@ -62,7 +62,7 @@ class AddPoint(PointBase):
 
     @classmethod
     def add_point(cls, data):
-        point_uuid = Functions.make_uuid()
+        point_uuid = "pnt_"+Functions.make_uuid()
         point_name = data.get("point_name")
         point_object_id = data.get("point_object_id")
         point_object_type = data.get("point_object_type")
@@ -70,6 +70,7 @@ class AddPoint(PointBase):
         priority_array_write: dict = {}
         point_name = PointBase.name_clean(point_name)
         data.point_name = point_name
+
         check_object_id: BacnetPointModel = BacnetPointModel.existing_object_id(device_uuid, point_object_id,
                                                                                 point_object_type)
         if check_object_id:
@@ -151,7 +152,9 @@ class Point(PointBase):
         point = BacnetPointModel.find_by_point_uuid(point_uuid)
         if point:
             point.delete_from_db()
-        return '', 204
+            return {"message": f"pass"}, 200
+        else:
+            return {"message": "failed to delete"}, 404
 
     @staticmethod
     def create_model(uuid, data):
